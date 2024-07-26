@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/maxfinnsjo/subad/database"
 	"github.com/maxfinnsjo/subad/models"
@@ -157,16 +156,13 @@ func (h *Handler) getFlashMessage(w http.ResponseWriter, r *http.Request) string
 	return message
 }
 
-func (h *Handler) getUser(r *http.Request) *models.User {
-	session, err := h.getSession(r)
+func (h *Handler) getSession(r *http.Request) (*sessions.Session, bool) {
+	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		return nil
+		return nil, false
 	}
-	user, err := h.DB.GetUserByID(session.UserID)
-	if err != nil {
-		return nil
-	}
-	return user
+	session, ok := h.Sessions.Get(cookie.Value)
+	return session, ok
 }
 
 func (h *Handler) getSession(r *http.Request) (*sessions.Session, error) {
