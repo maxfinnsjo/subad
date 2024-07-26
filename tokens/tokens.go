@@ -1,9 +1,11 @@
 package tokens
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
+	"your-project-path/database"
 	"your-project-path/models"
 )
 
@@ -15,26 +17,27 @@ func NewTokenManager(db *database.DB) *TokenManager {
 	return &TokenManager{DB: db}
 }
 
-func (tm *TokenManager) TradeToken(senderID, recipientID, tokenID int) error {
-    token, err := tm.DB.GetTokenByID(tokenID)
-    if err != nil {
-        return err
-    }
+func (tm *TokenManager) GenerateToken(userID int) (*models.StatusToken, error) {
+	token := &models.StatusToken{
+		UserID:    userID,
+		Value:     rand.Intn(100) + 1, // Generate a random value between 1 and 100
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(24 * time.Hour), // Token expires after 24 hours
+	}
 
-    if token.UserID != senderID {
-        return errors.New("token does not belong to sender")
-    }
+	err := tm.DB.CreateStatusToken(token)
+	if err != nil {
+		return nil, err
+	}
 
-    return tm.DB.UpdateTokenOwner(tokenID, recipientID)
+	return token, nil
 }
-
 
 func (tm *TokenManager) GetUserTokens(userID int) ([]models.StatusToken, error) {
 	return tm.DB.GetStatusTokensByUserID(userID)
 }
 
 func (tm *TokenManager) UseToken(tokenID int) error {
-	// Implement logic to use a token (e.g., mark it as used in the database)
 	return tm.DB.MarkTokenAsUsed(tokenID)
 }
 
@@ -52,4 +55,17 @@ func (tm *TokenManager) CalculateUserStatus(userID int) (int, error) {
 	}
 
 	return totalValue, nil
+}
+
+func (tm *TokenManager) TradeToken(senderID, recipientID, tokenID int) error {
+	token, err := tm.DB.GetTokenByID(tokenID)
+	if err != nil {
+		return err
+	}
+
+	if token.UserID != senderID {
+		return errors.New("token does not belong to sender")
+	}
+
+	return tm.DB.UpdateTokenOwner(tokenID, recipientID)
 }
