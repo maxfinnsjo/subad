@@ -1,23 +1,23 @@
 package models
 
 import (
-	"time"
+    "time"
 )
 
 type User struct {
-	ID        int
-	Username  string
-	Email     string
-	Password  string
-	Role      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	func (u *User) CheckPassword(password string) bool {
-		// For now, we'll do a simple comparison. In a real-world scenario,
-		// you'd want to use a secure password hashing algorithm like bcrypt.
-		return u.Password == password
-	}
-	
+    ID        int
+    Username  string
+    Email     string
+    Password  string
+    Role      string
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+
+func (u *User) CheckPassword(password string) bool {
+    // For now, we'll do a simple comparison. In a real-world scenario,
+    // you'd want to use a secure password hashing algorithm like bcrypt.
+    return u.Password == password
 }
 
 type Page struct {
