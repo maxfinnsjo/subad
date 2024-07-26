@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"your-project-path/models"
+	"github.com/maxfinnsjo/subad/models"
 )
 
 type DB struct {

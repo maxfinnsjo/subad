@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"your-project-path/models"
+	"github.com/maxfinnsjo/subad/models"
 )
 
 type Session struct {

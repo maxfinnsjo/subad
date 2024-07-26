@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"your-project-path/database"
-	"your-project-path/models"
+	"github.com/maxfinnsjo/subad/database"
+	"github.com/maxfinnsjo/subad/models"
 )
 
 type TokenManager struct {

@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"your-project-path/database"
-	"your-project-path/models"
-	"your-project-path/sessions"
-	"your-project-path/tokens"
+	"github.com/maxfinnsjo/subad/database"
+	"github.com/maxfinnsjo/subad/models"
+	"github.com/maxfinnsjo/subad/sessions"
+	"github.com/maxfinnsjo/subad/tokens"
 )
 
 type Handler struct {

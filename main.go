@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
-	"your-project-path/database"
-	"your-project-path/handlers"
-	"your-project-path/sessions"
+	"github.com/maxfinnsjo/subad/database"
+	"github.com/maxfinnsjo/subad/handlers"
+	"github.com/maxfinnsjo/subad/sessions"
 )
 
 func main() {
