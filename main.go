@@ -10,6 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"your-project-path/database"
 	"your-project-path/handlers"
+	"your-project-path/sessions"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	// Initialize the session store
+	sessionStore := sessions.NewSessionStore()
 
 	// Initialize the router
 	r := chi.NewRouter()
@@ -30,7 +34,7 @@ func main() {
 	r.Use(middleware.RealIP)
 
 	// Initialize handlers
-	h := handlers.NewHandler(db)
+	h := handlers.NewHandler(db, sessionStore)
 
 	// Public routes
 	r.Group(func(r chi.Router) {
@@ -48,11 +52,10 @@ func main() {
 		r.Get("/logout", h.Logout)
 		r.Post("/pages", h.CreatePage)
 		r.Get("/pages/{id}", h.ViewPage)
-        r.Get("/generate-token", h.GenerateToken)
-        r.Get("/user-status", h.ViewUserStatus)
-        r.Get("/earn-token", h.EarnToken)
-        r.Post("/trade-token", h.TradeToken)
-
+		r.Get("/generate-token", h.GenerateToken)
+		r.Get("/user-status", h.ViewUserStatus)
+		r.Get("/earn-token", h.EarnToken)
+		r.Post("/trade-token", h.TradeToken)
 	})
 
 	// Start the server
@@ -66,9 +69,7 @@ func main() {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement proper authentication check
-		// For now, we'll just check if a user_id cookie exists
-		_, err := r.Cookie("user_id")
+		_, err := r.Cookie("session_id")
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
