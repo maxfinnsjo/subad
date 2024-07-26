@@ -14,14 +14,6 @@ Subad is a powerful and flexible subscription-based access control system built 
 - Responsive and modern UI powered by Tailwind CSS
 - Seamless, JavaScript-free interactions using HTMX
 
-## Unique Aspects
-
-- Simulated blockchain technology for status tokens
-- Temporary page ownership based on user status levels
-- Dynamic influence system for both subscribers and administrators
-- Gamification elements to earn, trade, and manage status
-- Sub-to-sub and sub-to-page interactions for status transactions
-
 ## Technical Stack
 
 - Backend: Go
@@ -30,83 +22,146 @@ Subad is a powerful and flexible subscription-based access control system built 
 - Interactivity: HTMX
 - Database: SQLite (development), scalable to other RDBMS for production
 
-## Development Roadmap
-
-1. Set up Go environment and install dependencies
-2. Design and implement database schema (users, pages, access permissions)
-3. Develop Go backend with RESTful API endpoints
-4. Create and integrate HTML templates using templ
-5. Apply responsive styling with Tailwind CSS
-6. Implement HTMX for smooth, JavaScript-free interactions
-7. Develop status-token system with simulated blockchain functionality
-8. Create interactive feature pages (e.g., roulette wheel, challenges)
-9. Implement comprehensive admin dashboard
-10. Develop algorithms for status influence and page ownership
-
-## Scalability and Optimization
-
-- Architect the system to handle increasing users and pages
-- Implement efficient caching mechanisms
-- Optimize database queries and indexes
-- Consider CDN integration for static asset delivery
-- Design for horizontal scaling in cloud environments
-
-## Deployment Strategy
-
-1. Local development environment setup
-2. Containerization with Docker for consistent deployments
-3. Cloud deployment options (AWS, Google Cloud, DigitalOcean)
-4. Implement CI/CD pipeline for automated testing and deployment
-
-## Future Enhancements
-
-- Integration with real blockchain technology for status tokens
-- Advanced analytics for user interactions and page popularity
-- RESTful API for third-party integrations
-- Mobile application development using the existing backend
-- Enhanced security features and audit logging
-
 ## Getting Started
 
-[Include instructions for setting up the development environment, running the application locally, and contributing to the project.]
+1. Clone the repository
+2. Install Go (version 1.16 or later)
+3. Install required dependencies:
 
-## Contributing
 
-## Development with LLM Agent Assistance
 
-This project supports development with the help of an LLM (Large Language Model) agent. Follow these instructions to effectively use the LLM agent:
+go mod tidy
 
-1. Always provide the entire codebase context when asking for assistance.
-2. Ask the LLM to review the entire codebase before making suggestions.
-3. Instruct the LLM to maintain the OOP approach and modular structure.
-4. When introducing big updates, ask the LLM to suggest creating new branches.
-5. Request the LLM to print complete updated files one at a time.
-6. Use this README as an instruction manual for the LLM, referring to specific sections when needed.
+4. Set up your development environment (see Environment Setup section)
+5. Run the application:
 
-### Improved LLM Agent Guidelines
 
-- Start each interaction by clearly stating the current task or problem.
-- Provide context about recent changes or decisions made in the project.
-- Ask the LLM to explain its reasoning for suggested changes or improvements.
-- Request step-by-step instructions for complex implementations.
-- Encourage the LLM to suggest alternative approaches when applicable.
-- Ask for code examples or pseudo-code to illustrate concepts.
-- Prompt the LLM to consider edge cases and potential issues in its suggestions.
-- Request that the LLM highlight any assumptions it's making about the project structure or requirements.
-- Periodically ask the LLM to summarize the current state of the project and suggest next steps.
-- Encourage the LLM to provide comments in the code for complex logic or design decisions.
+
+go run main.go
+
+
+## Environment Setup
+
+1. Create a `.env` file in the project root with the following content:
+
+
+
+DB_PATH=./subad.db PORT=8080
+
+2. Ensure you have SQLite installed on your system
+3. For private repository access, configure Git to use SSH:
+
+
+
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+
+## Module Management and Dependency Resolution
+
+1. To add a new dependency:
+
+
+
+go get github.com/example/package
+
+2. To update dependencies:
+
+
+
+go mod tidy
+
+3. For private repositories, set the GOPRIVATE environment variable:
+
+
+
+export GOPRIVATE=github.com/yourusername/privaterepo
+
+
+## Code Structure and Organization
+
+- `database/`: Database operations and connections
+- `models/`: Data structures and business logic
+- `handlers/`: HTTP request handlers
+- `tokens/`: Token management system
+- `sessions/`: User session management
+- `templates/`: HTML templates using templ
 
 ## Development Workflow
 
-1. Review existing code and identify areas for improvement.
-2. Create a new feature branch for significant changes.
-3. Implement changes in small, testable increments.
-4. Write and update tests for new functionality.
-5. Use the LLM agent for code review and suggestions.
-6. Update documentation, including godoc comments and this README.
-7. Submit a pull request for review and merge into the development branch.
-8. Regularly merge the development branch into main for stable releases.
+1. Create a new feature branch
+2. Implement changes in small, testable increments
+3. Write and update tests for new functionality
+4. Use the LLM agent for code review and suggestions
+5. Update documentation, including godoc comments
+6. Submit a pull request for review
 
+## Testing
+
+1. Write unit tests in `*_test.go` files alongside the code they're testing
+2. Run tests:
+
+
+
+go test ./...
+
+3. For coverage report:
+
+
+
+go test -cover ./...
+
+
+## Development with LLM Agent Assistance
+
+1. Provide the entire codebase context when asking for assistance
+2. Ask the LLM to review the codebase before making suggestions
+3. Instruct the LLM to maintain the OOP approach and modular structure
+4. For big updates, ask the LLM to suggest creating new branches
+5. Request the LLM to print complete updated files one at a time
+6. Use this README as an instruction manual for the LLM
+
+### Improved LLM Agent Guidelines
+
+- Start each interaction by clearly stating the current task or problem
+- Provide context about recent changes or decisions made in the project
+- Ask the LLM to explain its reasoning for suggested changes or improvements
+- Request step-by-step instructions for complex implementations
+- Encourage the LLM to suggest alternative approaches when applicable
+- Ask for code examples or pseudo-code to illustrate concepts
+- Prompt the LLM to consider edge cases and potential issues in its suggestions
+- Request that the LLM highlight any assumptions it's making about the project structure or requirements
+- Periodically ask the LLM to summarize the current state of the project and suggest next steps
+- Encourage the LLM to provide comments in the code for complex logic or design decisions
+
+## Troubleshooting Guide
+
+1. Compilation errors:
+- Ensure all necessary packages are imported
+- Check for typos in variable or function names
+- Verify that all used packages are in the go.mod file
+2. Runtime errors:
+- Check database connection string
+- Ensure all required environment variables are set
+- Verify file permissions for database and log files
+3. Dependency issues:
+- Run `go mod tidy` to resolve and update dependencies
+- For private repos, ensure SSH keys are correctly set up
+
+## Deployment Strategy
+
+1. Set up a CI/CD pipeline (e.g., GitHub Actions, GitLab CI)
+2. Create Docker containers for consistent deployments
+3. Use environment variables for configuration in different environments
+4. Implement database migrations for schema changes
+5. Set up monitoring and logging (e.g., Prometheus, ELK stack)
+
+## Contributing
+
+1. Fork the repository
+2. Create a new branch for your feature
+3. Commit changes with clear, descriptive messages
+4. Push your branch and submit a pull request
+5. Ensure your code adheres to the project's style guide and passes all tests
 
 ## License
 
