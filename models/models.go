@@ -25,13 +25,12 @@ type Page struct {
     UpdatedAt        time.Time
 }
 
-func (p *Page) IsAccessibleBy(user *models.User, userStatus int) bool {
+func (p *Page) IsAccessibleBy(user *User, userStatus int) bool {
     if user.IsAdmin() || p.OwnerID == user.ID {
         return true
     }
     return userStatus >= p.StatusRequirement
 }
-
 
 type Subscription struct {
 	ID        int
@@ -53,20 +52,6 @@ type StatusToken struct {
 
 func (u *User) IsAdmin() bool {
 	return u.Role == "admin"
-}
-
-func (p *Page) IsAccessibleBy(user *User, subscriptions []Subscription) bool {
-	if user.IsAdmin() || p.OwnerID == user.ID {
-		return true
-	}
-
-	for _, sub := range subscriptions {
-		if sub.PageID == p.ID && sub.UserID == user.ID && sub.Status == "active" && sub.ExpiresAt.After(time.Now()) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (s *Subscription) IsActive() bool {
