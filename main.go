@@ -77,3 +77,4 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+cat ~/.ssh/config
