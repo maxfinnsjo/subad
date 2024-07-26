@@ -56,6 +56,16 @@ func (db *DB) GetUserByID(id int) (*models.User, error) {
     return user, nil
 }
 
+func (db *DB) GetUserByUsername(username string) (*models.User, error) {
+    user := &models.User{}
+    err := db.QueryRow("SELECT id, username, email, password, role, created_at, updated_at FROM users WHERE username = ?", username).
+        Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+    if err != nil {
+        return nil, fmt.Errorf("error getting user by username: %w", err)
+    }
+    return user, nil
+}
+
 func (db *DB) CreateUser(user *models.User) error {
     _, err := db.Exec("INSERT INTO users (username, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
         user.Username, user.Email, user.Password, user.Role, time.Now(), time.Now())
