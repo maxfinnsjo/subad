@@ -2,6 +2,8 @@ package database
 
 import (
     "database/sql"
+    "fmt"
+    "time"
     "github.com/maxfinnsjo/subad/models"
 )
 
