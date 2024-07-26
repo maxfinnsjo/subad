@@ -15,22 +15,6 @@ func NewTokenManager(db *database.DB) *TokenManager {
 	return &TokenManager{DB: db}
 }
 
-func (tm *TokenManager) GenerateToken(userID int) (*models.StatusToken, error) {
-	token := &models.StatusToken{
-		UserID:    userID,
-		Value:     rand.Intn(100) + 1, // Generate a random value between 1 and 100
-		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(24 * time.Hour), // Token expires after 24 hours
-	}
-
-	err := tm.DB.CreateStatusToken(token)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
-}
-
 func (tm *TokenManager) TradeToken(senderID, recipientID, tokenID int) error {
     token, err := tm.DB.GetTokenByID(tokenID)
     if err != nil {
