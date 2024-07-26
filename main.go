@@ -50,6 +50,9 @@ func main() {
 		r.Get("/pages/{id}", h.ViewPage)
         r.Get("/generate-token", h.GenerateToken)
         r.Get("/user-status", h.ViewUserStatus)
+        r.Get("/earn-token", h.EarnToken)
+        r.Post("/trade-token", h.TradeToken)
+
 	})
 
 	// Start the server

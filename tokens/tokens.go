@@ -31,6 +31,20 @@ func (tm *TokenManager) GenerateToken(userID int) (*models.StatusToken, error) {
 	return token, nil
 }
 
+func (tm *TokenManager) TradeToken(senderID, recipientID, tokenID int) error {
+    token, err := tm.DB.GetTokenByID(tokenID)
+    if err != nil {
+        return err
+    }
+
+    if token.UserID != senderID {
+        return errors.New("token does not belong to sender")
+    }
+
+    return tm.DB.UpdateTokenOwner(tokenID, recipientID)
+}
+
+
 func (tm *TokenManager) GetUserTokens(userID int) ([]models.StatusToken, error) {
 	return tm.DB.GetStatusTokensByUserID(userID)
 }

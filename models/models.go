@@ -15,14 +15,23 @@ type User struct {
 }
 
 type Page struct {
-	ID          int
-	Title       string
-	Content     string
-	OwnerID     int
-	AccessLevel int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+    ID               int
+    Title            string
+    Content          string
+    OwnerID          int
+    AccessLevel      int
+    StatusRequirement int
+    CreatedAt        time.Time
+    UpdatedAt        time.Time
 }
+
+func (p *Page) IsAccessibleBy(user *models.User, userStatus int) bool {
+    if user.IsAdmin() || p.OwnerID == user.ID {
+        return true
+    }
+    return userStatus >= p.StatusRequirement
+}
+
 
 type Subscription struct {
 	ID        int

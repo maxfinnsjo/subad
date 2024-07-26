@@ -43,22 +43,22 @@ func (db *DB) CreateUser(user *models.User) error {
 }
 
 func (db *DB) GetPageByID(id int) (*models.Page, error) {
-	page := &models.Page{}
-	err := db.QueryRow("SELECT id, title, content, owner_id, access_level, created_at, updated_at FROM pages WHERE id = ?", id).
-		Scan(&page.ID, &page.Title, &page.Content, &page.OwnerID, &page.AccessLevel, &page.CreatedAt, &page.UpdatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("error getting page: %w", err)
-	}
-	return page, nil
+    page := &models.Page{}
+    err := db.QueryRow("SELECT id, title, content, owner_id, access_level, status_requirement, created_at, updated_at FROM pages WHERE id = ?", id).
+        Scan(&page.ID, &page.Title, &page.Content, &page.OwnerID, &page.AccessLevel, &page.StatusRequirement, &page.CreatedAt, &page.UpdatedAt)
+    if err != nil {
+        return nil, fmt.Errorf("error getting page: %w", err)
+    }
+    return page, nil
 }
 
 func (db *DB) CreatePage(page *models.Page) error {
-	_, err := db.Exec("INSERT INTO pages (title, content, owner_id, access_level, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-		page.Title, page.Content, page.OwnerID, page.AccessLevel, time.Now(), time.Now())
-	if err != nil {
-		return fmt.Errorf("error creating page: %w", err)
-	}
-	return nil
+    _, err := db.Exec("INSERT INTO pages (title, content, owner_id, access_level, status_requirement, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        page.Title, page.Content, page.OwnerID, page.AccessLevel, page.StatusRequirement, time.Now(), time.Now())
+    if err != nil {
+        return fmt.Errorf("error creating page: %w", err)
+    }
+    return nil
 }
 
 func (db *DB) GetSubscriptionsByUserID(userID int) ([]models.Subscription, error) {
