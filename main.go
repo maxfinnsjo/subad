@@ -7,34 +7,12 @@ import (
 	"strings"
 	"fmt"
 
-    _ "github.com/mattn/go-sqlite3"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-func initDB(db *sql.DB) {
-    _, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            is_admin BOOLEAN NOT NULL DEFAULT 0
-        );
-        CREATE TABLE IF NOT EXISTS pages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            content TEXT
-        );
-        CREATE TABLE IF NOT EXISTS page_access (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            page_id INTEGER,
-            user_id INTEGER,
-            FOREIGN KEY (page_id) REFERENCES pages(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        );
-    `)
-    if err != nil {
-        log.Fatal(err)
-    }
-}
+var db *sql.DB
 
 func loginHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -124,22 +102,60 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
     serveTemplate(w, "register.html", nil)
 }
 
+// Implement the new handlers here
+func pagesHandler(w http.ResponseWriter, r *http.Request) {
+	// List available pages
+}
+
+func pageHandler(w http.ResponseWriter, r *http.Request) {
+	// Display a specific page
+}
+
+func requestAccessHandler(w http.ResponseWriter, r *http.Request) {
+	// Handle access requests
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	// Display user status and tokens
+}
+
+func tradeStatusHandler(w http.ResponseWriter, r *http.Request) {
+	// Handle status token trading
+}
+
+
 func main() {
-    db, err := sql.Open("sqlite3", "./subad.db")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
+	var err error
+	db, err = sql.Open("sqlite3", "./subad.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-    initDB(db)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
-    http.HandleFunc("/", loginPageHandler)
-    http.HandleFunc("/register-page", registerPageHandler)
-    http.HandleFunc("/login", loginHandler(db))
-    http.HandleFunc("/register", registerHandler(db))
-	http.HandleFunc("/admin", adminHandler)
-    http.HandleFunc("/sub", subHandler)
+	// Serve static files
+	fileServer := http.FileServer(http.Dir("./static"))
+	r.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
-    log.Println("Server starting on :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	// Routes
+	r.Get("/", homeHandler)
+	r.Get("/login", loginHandler)
+	r.Post("/login", loginPostHandler)
+	r.Get("/register", registerHandler)
+	r.Post("/register", registerPostHandler)
+	r.Get("/dashboard", dashboardHandler)
+	r.Get("/admin", adminHandler)
+	r.Get("/logout", logoutHandler)
+
+	// New routes
+	r.Get("/pages", pagesHandler)
+	r.Get("/page/{id}", pageHandler)
+	r.Post("/request-access", requestAccessHandler)
+	r.Get("/status", statusHandler)
+	r.Post("/trade-status", tradeStatusHandler)
+
+	log.Println("Server starting on :8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
