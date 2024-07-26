@@ -25,14 +25,15 @@ func (db *DB) UpdateTokenOwner(tokenID, newOwnerID int) error {
     // Implement the logic to update a token's owner
     return nil
 
-func (db *DB) CreateToken(token *models.StatusToken) error {
-    _, err := db.Exec("INSERT INTO status_tokens (user_id, value, created_at, expires_at) VALUES (?, ?, ?, ?)",
-        token.UserID, token.Value, token.CreatedAt, token.ExpiresAt)
-    if err != nil {
-        return fmt.Errorf("error creating token: %w", err)
-    }
-    return nil
-}
+	func (db *DB) CreateToken(token *models.StatusToken) error {
+		_, err := db.Exec("INSERT INTO status_tokens (user_id, value, created_at, expires_at) VALUES (?, ?, ?, ?)",
+			token.UserID, token.Value, token.CreatedAt, token.ExpiresAt)
+		if err != nil {
+			return fmt.Errorf("error creating token: %w", err)
+		}
+		return nil
+	}
+	
 
 }
 
