@@ -1,0 +1,35 @@
+{{ define "admin" }}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">User Management</h2>
+            <ul class="space-y-2">
+                <li><a href="/admin/users" class="text-blue-500 hover:underline">View All Users</a></li>
+                <li><a href="/admin/users/create" class="text-blue-500 hover:underline">Create New User</a></li>
+            </ul>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Page Management</h2>
+            <ul class="space-y-2">
+                <li><a href="/admin/pages" class="text-blue-500 hover:underline">View All Pages</a></li>
+                <li><a href="/admin/pages/create" class="text-blue-500 hover:underline">Create New Page</a></li>
+            </ul>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Subscription Management</h2>
+            <ul class="space-y-2">
+                <li><a href="/admin/subscriptions" class="text-blue-500 hover:underline">View All Subscriptions</a></li>
+                <li><a href="/admin/subscriptions/approve" class="text-blue-500 hover:underline">Approve Subscriptions</a></li>
+            </ul>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Token Management</h2>
+            <ul class="space-y-2">
+                <li><a href="/admin/tokens" class="text-blue-500 hover:underline">View All Tokens</a></li>
+                <li><a href="/admin/tokens/generate" class="text-blue-500 hover:underline">Generate New Tokens</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{{ end }}
