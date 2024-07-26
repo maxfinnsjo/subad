@@ -48,6 +48,8 @@ func main() {
 		r.Get("/logout", h.Logout)
 		r.Post("/pages", h.CreatePage)
 		r.Get("/pages/{id}", h.ViewPage)
+        r.Get("/generate-token", h.GenerateToken)
+        r.Get("/user-status", h.ViewUserStatus)
 	})
 
 	// Start the server

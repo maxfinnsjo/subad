@@ -12,6 +12,52 @@ import (
 type Handler struct {
 	DB      *database.DB
 	Sessions *sessions.SessionStore
+
+	func (h *Handler) GenerateToken(w http.ResponseWriter, r *http.Request) {
+		sessionID, err := r.Cookie("session_id")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		session, ok := h.Sessions.Get(sessionID.Value)
+		if !ok {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		tokenManager := tokens.NewTokenManager(h.DB)
+		token, err := tokenManager.GenerateToken(session.UserID)
+		if err != nil {
+			http.Error(w, "Error generating token", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(fmt.Sprintf("Token generated successfully. Value: %d", token.Value)))
+	}
+
+	func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
+		sessionID, err := r.Cookie("session_id")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		session, ok := h.Sessions.Get(sessionID.Value)
+		if !ok {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		tokenManager := tokens.NewTokenManager(h.DB)
+		status, err := tokenManager.CalculateUserStatus(session.UserID)
+		if err != nil {
+			http.Error(w, "Error calculating user status", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(fmt.Sprintf("Your current status: %d", status)))
+	}
 }
 
 func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
