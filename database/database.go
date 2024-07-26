@@ -10,6 +10,21 @@ import (
 
 type DB struct {
 	*sql.DB
+	func (db *DB) MarkTokenAsUsed(tokenID int) error {
+		// Implement the logic to mark a token as used
+		return nil
+	}
+	
+	func (db *DB) GetTokenByID(tokenID int) (*models.StatusToken, error) {
+		// Implement the logic to retrieve a token by ID
+		return nil, nil
+	}
+	
+	func (db *DB) UpdateTokenOwner(tokenID, newOwnerID int) error {
+		// Implement the logic to update a token's owner
+		return nil
+	}
+	
 }
 
 func NewDB(dataSourceName string) (*DB, error) {
@@ -116,3 +131,4 @@ func (db *DB) CreateStatusToken(token *models.StatusToken) error {
 	}
 	return nil
 }
+

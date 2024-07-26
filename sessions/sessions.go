@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/maxfinnsjo/subad/models"
 )
 
 type Session struct {
