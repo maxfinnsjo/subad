@@ -6,41 +6,51 @@ import (
 
 	"your-project-path/database"
 	"your-project-path/models"
+	"your-project-path/sessions"
 )
 
 type Handler struct {
-	DB *database.DB
+	DB      *database.DB
+	Sessions *sessions.SessionStore
 }
 
-func NewHandler(db *database.DB) *Handler {
-	return &Handler{DB: db}
+func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
+	return &Handler{DB: db, Sessions: sessions}
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	// Implement home page logic
 	w.Write([]byte("Welcome to Subad"))
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	// Implement login page logic
 	w.Write([]byte("Login page"))
 }
 
 func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
-	// Implement login post logic
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	// TODO: Implement actual authentication logic
-	w.Write([]byte("Login attempt for " + username))
+
+	user, err := h.DB.GetUserByUsername(username)
+	if err != nil || !user.CheckPassword(password) {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	session, err := h.Sessions.Create(user.ID)
+	if err != nil {
+		http.Error(w, "Error creating session", http.StatusInternalServerError)
+		return
+	}
+
+	sessions.SetSession(w, session)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	// Implement register page logic
 	w.Write([]byte("Register page"))
 }
 
 func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
-	// Implement register post logic
 	user := &models.User{
 		Username: r.FormValue("username"),
 		Email:    r.FormValue("email"),
@@ -56,10 +66,19 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	// Implement dashboard logic
-	// TODO: Get actual user ID from session
-	userID := 1
-	user, err := h.DB.GetUserByID(userID)
+	sessionID, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	session, ok := h.Sessions.Get(sessionID.Value)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	user, err := h.DB.GetUserByID(session.UserID)
 	if err != nil {
 		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
 		return
@@ -68,20 +87,34 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	// Implement logout logic
-	// TODO: Implement actual session destruction
-	w.Write([]byte("Logged out successfully"))
+	sessionID, err := r.Cookie("session_id")
+	if err == nil {
+		h.Sessions.Delete(sessionID.Value)
+	}
+	sessions.ClearSession(w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
-	// Implement page creation logic
+	sessionID, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	session, ok := h.Sessions.Get(sessionID.Value)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
 	page := &models.Page{
 		Title:       r.FormValue("title"),
 		Content:     r.FormValue("content"),
-		OwnerID:     1, // TODO: Get actual user ID from session
+		OwnerID:     session.UserID,
 		AccessLevel: 0, // TODO: Implement access level logic
 	}
-	err := h.DB.CreatePage(page)
+	err = h.DB.CreatePage(page)
 	if err != nil {
 		http.Error(w, "Error creating page", http.StatusInternalServerError)
 		return
@@ -90,7 +123,6 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
-	// Implement page viewing logic
 	pageID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		http.Error(w, "Invalid page ID", http.StatusBadRequest)
@@ -101,6 +133,29 @@ func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error fetching page", http.StatusInternalServerError)
 		return
 	}
-	// TODO: Check user permissions before displaying page
+	
+	sessionID, err := r.Cookie("session_id")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	session, ok := h.Sessions.Get(sessionID.Value)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	user, err := h.DB.GetUserByID(session.UserID)
+	if err != nil {
+		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
+		return
+	}
+
+	if !page.IsAccessibleBy(user) {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
 	w.Write([]byte("Page Title: " + page.Title + "\nContent: " + page.Content))
 }
