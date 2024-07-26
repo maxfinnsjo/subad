@@ -1,67 +1,29 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"your-project-path/database"
 	"your-project-path/models"
 	"your-project-path/sessions"
+	"your-project-path/tokens"
 )
 
 type Handler struct {
-	DB      *database.DB
-	Sessions *sessions.SessionStore
-
-	func (h *Handler) GenerateToken(w http.ResponseWriter, r *http.Request) {
-		sessionID, err := r.Cookie("session_id")
-		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		session, ok := h.Sessions.Get(sessionID.Value)
-		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		tokenManager := tokens.NewTokenManager(h.DB)
-		token, err := tokenManager.GenerateToken(session.UserID)
-		if err != nil {
-			http.Error(w, "Error generating token", http.StatusInternalServerError)
-			return
-		}
-
-		w.Write([]byte(fmt.Sprintf("Token generated successfully. Value: %d", token.Value)))
-	}
-
-	func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
-		sessionID, err := r.Cookie("session_id")
-		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		session, ok := h.Sessions.Get(sessionID.Value)
-		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		tokenManager := tokens.NewTokenManager(h.DB)
-		status, err := tokenManager.CalculateUserStatus(session.UserID)
-		if err != nil {
-			http.Error(w, "Error calculating user status", http.StatusInternalServerError)
-			return
-		}
-
-		w.Write([]byte(fmt.Sprintf("Your current status: %d", status)))
-	}
+	DB           *database.DB
+	Sessions     *sessions.SessionStore
+	TokenManager *tokens.TokenManager
 }
 
 func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
-	return &Handler{DB: db, Sessions: sessions}
+	return &Handler{
+		DB:           db,
+		Sessions:     sessions,
+		TokenManager: tokens.NewTokenManager(db),
+	}
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
@@ -112,14 +74,8 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	sessionID, err := r.Cookie("session_id")
+	session, err := h.getSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	session, ok := h.Sessions.Get(sessionID.Value)
-	if !ok {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -142,23 +98,18 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
-	sessionID, err := r.Cookie("session_id")
+	session, err := h.getSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	session, ok := h.Sessions.Get(sessionID.Value)
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
 	page := &models.Page{
-		Title:       r.FormValue("title"),
-		Content:     r.FormValue("content"),
-		OwnerID:     session.UserID,
-		AccessLevel: 0, // TODO: Implement access level logic
+		Title:            r.FormValue("title"),
+		Content:          r.FormValue("content"),
+		OwnerID:          session.UserID,
+		AccessLevel:      0,
+		StatusRequirement: 0,
 	}
 	err = h.DB.CreatePage(page)
 	if err != nil {
@@ -169,109 +120,134 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
-    pageID, err := strconv.Atoi(r.URL.Query().Get("id"))
-    if err != nil {
-        http.Error(w, "Invalid page ID", http.StatusBadRequest)
-        return
-    }
-    page, err := h.DB.GetPageByID(pageID)
-    if err != nil {
-        http.Error(w, "Error fetching page", http.StatusInternalServerError)
-        return
-    }
-    
-    sessionID, err := r.Cookie("session_id")
-    if err != nil {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	pageID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		http.Error(w, "Invalid page ID", http.StatusBadRequest)
+		return
+	}
+	page, err := h.DB.GetPageByID(pageID)
+	if err != nil {
+		http.Error(w, "Error fetching page", http.StatusInternalServerError)
+		return
+	}
+	
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-    session, ok := h.Sessions.Get(sessionID.Value)
-    if !ok {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	user, err := h.DB.GetUserByID(session.UserID)
+	if err != nil {
+		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
+		return
+	}
 
-    user, err := h.DB.GetUserByID(session.UserID)
-    if err != nil {
-        http.Error(w, "Error fetching user data", http.StatusInternalServerError)
-        return
-    }
+	userStatus, err := h.TokenManager.CalculateUserStatus(user.ID)
+	if err != nil {
+		http.Error(w, "Error calculating user status", http.StatusInternalServerError)
+		return
+	}
 
-    tokenManager := tokens.NewTokenManager(h.DB)
-    userStatus, err := tokenManager.CalculateUserStatus(user.ID)
-    if err != nil {
-        http.Error(w, "Error calculating user status", http.StatusInternalServerError)
-        return
-    }
+	if !page.IsAccessibleBy(user, userStatus) {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
 
-    if !page.IsAccessibleBy(user, userStatus) {
-        http.Error(w, "Access denied", http.StatusForbidden)
-        return
-    }
+	w.Write([]byte("Page Title: " + page.Title + "\nContent: " + page.Content))
+}
 
-    w.Write([]byte("Page Title: " + page.Title + "\nContent: " + page.Content))
+func (h *Handler) GenerateToken(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	token, err := h.TokenManager.GenerateToken(session.UserID)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(fmt.Sprintf("Token generated successfully. Value: %d", token.Value)))
+}
+
+func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	status, err := h.TokenManager.CalculateUserStatus(session.UserID)
+	if err != nil {
+		http.Error(w, "Error calculating user status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(fmt.Sprintf("Your current status: %d", status)))
 }
 
 func (h *Handler) EarnToken(w http.ResponseWriter, r *http.Request) {
-    sessionID, err := r.Cookie("session_id")
-    if err != nil {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-    session, ok := h.Sessions.Get(sessionID.Value)
-    if !ok {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	token, err := h.TokenManager.GenerateToken(session.UserID)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
 
-    tokenManager := tokens.NewTokenManager(h.DB)
-    token, err := tokenManager.GenerateToken(session.UserID)
-    if err != nil {
-        http.Error(w, "Error generating token", http.StatusInternalServerError)
-        return
-    }
-
-    w.Write([]byte(fmt.Sprintf("Congratulations! You've earned a new token with value: %d", token.Value)))
+	w.Write([]byte(fmt.Sprintf("Congratulations! You've earned a new token with value: %d", token.Value)))
 }
 
 func (h *Handler) TradeToken(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    sessionID, err := r.Cookie("session_id")
-    if err != nil {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-    session, ok := h.Sessions.Get(sessionID.Value)
-    if !ok {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	tokenID, err := strconv.Atoi(r.FormValue("token_id"))
+	if err != nil {
+		http.Error(w, "Invalid token ID", http.StatusBadRequest)
+		return
+	}
 
-    tokenID, err := strconv.Atoi(r.FormValue("token_id"))
-    if err != nil {
-        http.Error(w, "Invalid token ID", http.StatusBadRequest)
-        return
-    }
+	recipientID, err := strconv.Atoi(r.FormValue("recipient_id"))
+	if err != nil {
+		http.Error(w, "Invalid recipient ID", http.StatusBadRequest)
+		return
+	}
 
-    recipientID, err := strconv.Atoi(r.FormValue("recipient_id"))
-    if err != nil {
-        http.Error(w, "Invalid recipient ID", http.StatusBadRequest)
-        return
-    }
+	err = h.TokenManager.TradeToken(session.UserID, recipientID, tokenID)
+	if err != nil {
+		http.Error(w, "Error trading token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    tokenManager := tokens.NewTokenManager(h.DB)
-    err = tokenManager.TradeToken(session.UserID, recipientID, tokenID)
-    if err != nil {
-        http.Error(w, "Error trading token: "+err.Error(), http.StatusInternalServerError)
-        return
-    }
+	w.Write([]byte("Token traded successfully"))
+}
 
-    w.Write([]byte("Token traded successfully"))
+func (h *Handler) getSession(r *http.Request) (*sessions.Session, error) {
+	sessionID, err := r.Cookie("session_id")
+	if err != nil {
+		return nil, err
+	}
+
+	session, ok := h.Sessions.Get(sessionID.Value)
+	if !ok {
+		return nil, errors.New("invalid session")
+	}
+
+	return session, nil
 }
