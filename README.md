@@ -72,7 +72,36 @@ Subad is a powerful and flexible subscription-based access control system built 
 
 ## Contributing
 
-[Provide guidelines for contributing to the project, including coding standards, pull request process, and issue reporting.]
+## Development with LLM Agent Assistance
+
+This project supports development with the help of an LLM (Large Language Model) agent. Follow these instructions to effectively use the LLM agent:
+
+1. Always provide the entire codebase context when asking for assistance.
+2. Ask the LLM to review the entire codebase before making suggestions.
+3. Instruct the LLM to maintain the OOP approach and modular structure.
+4. When introducing big updates, ask the LLM to suggest creating new branches.
+5. Request the LLM to print complete updated files one at a time.
+6. Use this README as an instruction manual for the LLM, referring to specific sections when needed.
+
+### LLM Agent Guidelines
+
+- Maintain the existing architecture and design patterns.
+- Suggest improvements that enhance stability and robustness.
+- Provide detailed explanations for any suggested changes.
+- Adhere to Go best practices and idiomatic code.
+- Prioritize backwards compatibility and avoid breaking changes.
+
+## Development Workflow
+
+1. Review existing code and identify areas for improvement.
+2. Create a new feature branch for significant changes.
+3. Implement changes in small, testable increments.
+4. Write and update tests for new functionality.
+5. Use the LLM agent for code review and suggestions.
+6. Update documentation, including godoc comments and this README.
+7. Submit a pull request for review and merge into the development branch.
+8. Regularly merge the development branch into main for stable releases.
+
 
 ## License
 
