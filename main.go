@@ -1,20 +1,20 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
+	"your-project-path/database"
 	"your-project-path/handlers"
+	"your-project-path/middleware"
 )
 
 func main() {
 	// Initialize the database
-	db, err := sql.Open("sqlite3", "./subad.db")
+	db, err := database.NewDB("./subad.db")
 	if err != nil {
 		log.Fatal(err)
 	}
