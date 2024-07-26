@@ -83,13 +83,18 @@ This project supports development with the help of an LLM (Large Language Model)
 5. Request the LLM to print complete updated files one at a time.
 6. Use this README as an instruction manual for the LLM, referring to specific sections when needed.
 
-### LLM Agent Guidelines
+### Improved LLM Agent Guidelines
 
-- Maintain the existing architecture and design patterns.
-- Suggest improvements that enhance stability and robustness.
-- Provide detailed explanations for any suggested changes.
-- Adhere to Go best practices and idiomatic code.
-- Prioritize backwards compatibility and avoid breaking changes.
+- Start each interaction by clearly stating the current task or problem.
+- Provide context about recent changes or decisions made in the project.
+- Ask the LLM to explain its reasoning for suggested changes or improvements.
+- Request step-by-step instructions for complex implementations.
+- Encourage the LLM to suggest alternative approaches when applicable.
+- Ask for code examples or pseudo-code to illustrate concepts.
+- Prompt the LLM to consider edge cases and potential issues in its suggestions.
+- Request that the LLM highlight any assumptions it's making about the project structure or requirements.
+- Periodically ask the LLM to summarize the current state of the project and suggest next steps.
+- Encourage the LLM to provide comments in the code for complex logic or design decisions.
 
 ## Development Workflow
 
