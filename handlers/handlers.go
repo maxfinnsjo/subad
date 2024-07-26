@@ -156,19 +156,22 @@ func (h *Handler) getFlashMessage(w http.ResponseWriter, r *http.Request) string
 	return message
 }
 
+func (h *Handler) getUser(r *http.Request) *models.User {
+	session, ok := h.getSession(r)
+	if !ok {
+		return nil
+	}
+	user, err := h.DB.GetUserByID(session.UserID)
+	if err != nil {
+		return nil
+	}
+	return user
+}
+
 func (h *Handler) getSession(r *http.Request) (*sessions.Session, bool) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		return nil, false
-	}
-	session, ok := h.Sessions.Get(cookie.Value)
-	return session, ok
-}
-
-func (h *Handler) getSession(r *http.Request) (*sessions.Session, error) {
-	cookie, err := r.Cookie("session_id")
-	if err != nil {
-		return nil, err
 	}
 	return h.Sessions.Get(cookie.Value)
 }
