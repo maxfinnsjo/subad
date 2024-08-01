@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"html/template"
 
 	"github.com/maxfinnsjo/subad/database"
 	"github.com/maxfinnsjo/subad/models"
@@ -27,8 +28,14 @@ func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to Subad"))
+    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
+    err := tmpl.ExecuteTemplate(w, "layout", nil)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
+
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Login page"))
