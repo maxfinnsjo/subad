@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"log"
 
 	"github.com/maxfinnsjo/subad/database"
 	"github.com/maxfinnsjo/subad/models"
@@ -83,20 +84,21 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
-	user := &models.User{
-		Username: r.FormValue("username"),
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
-		Role:     "user",
-	}
-	err := h.DB.CreateUser(user)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error creating user"})
-		return
-	}
-	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully", "redirect": "/login"})
+    user := &models.User{
+        Username: r.FormValue("username"),
+        Email:    r.FormValue("email"),
+        Password: r.FormValue("password"),
+        Role:     "user",
+    }
+    err := h.DB.CreateUser(user)
+    if err != nil {
+        log.Printf("Error creating user: %v", err)
+        http.Error(w, "Error creating user", http.StatusInternalServerError)
+        return
+    }
+    w.Write([]byte("User registered successfully"))
 }
+
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	session, err := h.getSession(r)
