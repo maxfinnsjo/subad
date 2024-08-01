@@ -1,0 +1,28 @@
+{{ define "content" }}
+<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <h1 class="text-2xl font-bold mb-4">Welcome to your Dashboard, {{ .User.Username }}</h1>
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold mb-2">Your Status</h2>
+        <p>Current status: <span id="user-status">Loading...</span></p>
+        <button hx-get="/user-status" hx-target="#user-status" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
+            Refresh Status
+        </button>
+    </div>
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold mb-2">Earn Tokens</h2>
+        <button hx-post="/earn-token" hx-target="#earn-token-result" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Earn Token
+        </button>
+        <p id="earn-token-result" class="mt-2"></p>
+    </div>
+    <div>
+        <h2 class="text-xl font-semibold mb-2">Your Pages</h2>
+        <ul id="user-pages" class="list-disc list-inside">
+            <li>Loading pages...</li>
+        </ul>
+        <button hx-get="/user-pages" hx-target="#user-pages" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
+            Refresh Pages
+        </button>
+    </div>
+</div>
+{{ end }}
