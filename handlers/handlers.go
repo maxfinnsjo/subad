@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"html/template"
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/url"
+	"strconv"
 
 	"github.com/maxfinnsjo/subad/database"
 	"github.com/maxfinnsjo/subad/models"
@@ -15,58 +16,22 @@ type Handler struct {
 	DB           *database.DB
 	Sessions     *sessions.SessionStore
 	TokenManager *tokens.TokenManager
-	Templates    *template.Template
 }
-
-func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
-    // Implement page creation logic
-}
-
-func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
-    // Implement page viewing logic
-}
-
-func (h *Handler) GenerateToken(w http.ResponseWriter, r *http.Request) {
-    // Implement token generation logic
-}
-
-func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
-    // Implement user status viewing logic
-}
-
-func (h *Handler) EarnToken(w http.ResponseWriter, r *http.Request) {
-    // Implement token earning logic
-}
-
-func (h *Handler) TradeToken(w http.ResponseWriter, r *http.Request) {
-    // Implement token trading logic
-}
-
 
 func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
-	h := &Handler{
+	return &Handler{
 		DB:           db,
 		Sessions:     sessions,
 		TokenManager: tokens.NewTokenManager(db),
 	}
-	h.parseTemplates()
-	return h
-}
-
-func (h *Handler) parseTemplates() {
-	h.Templates = template.Must(template.ParseGlob("templates/*.html"))
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "home", map[string]interface{}{
-		"Title": "Home",
-	})
+	w.Write([]byte("Welcome to Subad"))
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "login", map[string]interface{}{
-		"Title": "Login",
-	})
+	w.Write([]byte("Login page"))
 }
 
 func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
@@ -75,27 +40,24 @@ func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.DB.GetUserByUsername(username)
 	if err != nil || !user.CheckPassword(password) {
-		h.setFlashMessage(w, "Invalid credentials")
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
 		return
 	}
 
 	session, err := h.Sessions.Create(user.ID)
 	if err != nil {
-		h.setFlashMessage(w, "Error creating session")
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Error creating session"})
 		return
 	}
 
 	sessions.SetSession(w, session)
-	h.setFlashMessage(w, "Login successful")
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful", "redirect": "/dashboard"})
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "register", map[string]interface{}{
-		"Title": "Register",
-	})
+	w.Write([]byte("Register page"))
 }
 
 func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
@@ -107,36 +69,25 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.DB.CreateUser(user)
 	if err != nil {
-		h.setFlashMessage(w, "Error creating user")
-		http.Redirect(w, r, "/register", http.StatusSeeOther)
+		http.Error(w, "Error creating user", http.StatusInternalServerError)
 		return
 	}
-	h.setFlashMessage(w, "User registered successfully")
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	w.Write([]byte("User registered successfully"))
 }
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	user := h.getUser(r)
-	if user == nil {
+	session, err := h.getSession(r)
+	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	h.render(w, r, "dashboard", map[string]interface{}{
-		"Title": "Dashboard",
-		"User":  user,
-	})
-}
 
-func (h *Handler) Admin(w http.ResponseWriter, r *http.Request) {
-	user := h.getUser(r)
-	if user == nil || !user.IsAdmin() {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	user, err := h.DB.GetUserByID(session.UserID)
+	if err != nil {
+		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
 		return
 	}
-	h.render(w, r, "admin", map[string]interface{}{
-		"Title": "Admin Dashboard",
-		"User":  user,
-	})
+	w.Write([]byte("Dashboard for " + user.Username))
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -145,58 +96,160 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		h.Sessions.Delete(sessionID.Value)
 	}
 	sessions.ClearSession(w)
-	h.setFlashMessage(w, "Logged out successfully")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func (h *Handler) render(w http.ResponseWriter, r *http.Request, name string, data map[string]interface{}) {
-	data["FlashMessage"] = h.getFlashMessage(w, r)
-	data["User"] = h.getUser(r)
-	err := h.Templates.ExecuteTemplate(w, name, data)
+func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
 	}
-}
 
-func (h *Handler) setFlashMessage(w http.ResponseWriter, message string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "flash",
-		Value:    url.QueryEscape(message),
-		Path:     "/",
-		HttpOnly: true,
-	})
-}
-
-func (h *Handler) getFlashMessage(w http.ResponseWriter, r *http.Request) string {
-	c, err := r.Cookie("flash")
+	page := &models.Page{
+		Title:            r.FormValue("title"),
+		Content:          r.FormValue("content"),
+		OwnerID:          session.UserID,
+		AccessLevel:      0,
+		StatusRequirement: 0,
+	}
+	err = h.DB.CreatePage(page)
 	if err != nil {
-		return ""
+		http.Error(w, "Error creating page", http.StatusInternalServerError)
+		return
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:   "flash",
-		MaxAge: -1,
-		Path:   "/",
-	})
-	message, _ := url.QueryUnescape(c.Value)
-	return message
+	w.Write([]byte("Page created successfully"))
 }
 
-func (h *Handler) getUser(r *http.Request) *models.User {
-	session, ok := h.getSession(r)
-	if !ok {
-		return nil
+func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
+	pageID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		http.Error(w, "Invalid page ID", http.StatusBadRequest)
+		return
 	}
+	page, err := h.DB.GetPageByID(pageID)
+	if err != nil {
+		http.Error(w, "Error fetching page", http.StatusInternalServerError)
+		return
+	}
+	
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
 	user, err := h.DB.GetUserByID(session.UserID)
 	if err != nil {
-		return nil
+		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
+		return
 	}
-	return user
+
+	userStatus, err := h.TokenManager.CalculateUserStatus(user.ID)
+	if err != nil {
+		http.Error(w, "Error calculating user status", http.StatusInternalServerError)
+		return
+	}
+
+	if !page.IsAccessibleBy(user, userStatus) {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
+	w.Write([]byte("Page Title: " + page.Title + "\nContent: " + page.Content))
 }
 
-func (h *Handler) getSession(r *http.Request) (*sessions.Session, bool) {
-	cookie, err := r.Cookie("session_id")
+func (h *Handler) GenerateToken(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
 	if err != nil {
-		return nil, false
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
 	}
-	return h.Sessions.Get(cookie.Value)
+
+	token, err := h.TokenManager.GenerateToken(session.UserID)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(fmt.Sprintf("Token generated successfully. Value: %d", token.Value)))
+}
+
+func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	status, err := h.TokenManager.CalculateUserStatus(session.UserID)
+	if err != nil {
+		http.Error(w, "Error calculating user status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(fmt.Sprintf("Your current status: %d", status)))
+}
+
+func (h *Handler) EarnToken(w http.ResponseWriter, r *http.Request) {
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	token, err := h.TokenManager.GenerateToken(session.UserID)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(fmt.Sprintf("Congratulations! You've earned a new token with value: %d", token.Value)))
+}
+
+func (h *Handler) TradeToken(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	tokenID, err := strconv.Atoi(r.FormValue("token_id"))
+	if err != nil {
+		http.Error(w, "Invalid token ID", http.StatusBadRequest)
+		return
+	}
+
+	recipientID, err := strconv.Atoi(r.FormValue("recipient_id"))
+	if err != nil {
+		http.Error(w, "Invalid recipient ID", http.StatusBadRequest)
+		return
+	}
+
+	err = h.TokenManager.TradeToken(session.UserID, recipientID, tokenID)
+	if err != nil {
+		http.Error(w, "Error trading token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Token traded successfully"))
+}
+
+func (h *Handler) getSession(r *http.Request) (*sessions.Session, error) {
+	sessionID, err := r.Cookie("session_id")
+	if err != nil {
+		return nil, err
+	}
+
+	session, ok := h.Sessions.Get(sessionID.Value)
+	if !ok {
+		return nil, fmt.Errorf("invalid session")
+	}
+
+	return session, nil
 }
