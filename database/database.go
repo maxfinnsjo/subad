@@ -75,6 +75,7 @@ func (db *DB) CreateUser(user *models.User) error {
     return nil
 }
 
+
 func (db *DB) GetPageByID(id int) (*models.Page, error) {
     page := &models.Page{}
     err := db.QueryRow("SELECT id, title, content, owner_id, access_level, status_requirement, created_at, updated_at FROM pages WHERE id = ?", id).

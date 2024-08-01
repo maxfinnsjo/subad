@@ -50,8 +50,8 @@ func main() {
 		r.Get("/register", h.Register)
 		r.Post("/register", h.RegisterPost)
 		r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "static/favicon.ico")
-		})
+			http.ServeFile(w, r, "static/favicon/favicon.ico")
+		})		
 	})
 
 	// Protected routes
