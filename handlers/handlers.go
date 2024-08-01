@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
-	"html/template"
 
 	"github.com/maxfinnsjo/subad/database"
 	"github.com/maxfinnsjo/subad/models"
@@ -28,26 +28,26 @@ func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
-    err := tmpl.ExecuteTemplate(w, "layout", nil)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
+	err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+		"Title": "Home",
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
-
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/login.html"))
-    err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
-        "Title": "Login",
-    })
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/login.html"))
+	err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+		"Title": "Login",
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
-
 
 func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
@@ -72,14 +72,14 @@ func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/register.html"))
-    err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
-        "Title": "Register",
-    })
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/register.html"))
+	err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+		"Title": "Register",
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
@@ -91,34 +91,36 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.DB.CreateUser(user)
 	if err != nil {
-		http.Error(w, "Error creating user", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Error creating user"})
 		return
 	}
-	w.Write([]byte("User registered successfully"))
+	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully", "redirect": "/login"})
 }
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
-    session, err := h.getSession(r)
-    if err != nil {
-        http.Redirect(w, r, "/login", http.StatusSeeOther)
-        return
-    }
+	session, err := h.getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-    user, err := h.DB.GetUserByID(session.UserID)
-    if err != nil {
-        http.Error(w, "Error fetching user data", http.StatusInternalServerError)
-        return
-    }
+	user, err := h.DB.GetUserByID(session.UserID)
+	if err != nil {
+		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
+		return
+	}
 
-    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/dashboard.html"))
-    err = tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
-        "Title": "Dashboard",
-        "User":  user,
-    })
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/dashboard.html"))
+	err = tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+		"Title": "Dashboard",
+		"User":  user,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := r.Cookie("session_id")
@@ -137,10 +139,10 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	page := &models.Page{
-		Title:            r.FormValue("title"),
-		Content:          r.FormValue("content"),
-		OwnerID:          session.UserID,
-		AccessLevel:      0,
+		Title:             r.FormValue("title"),
+		Content:           r.FormValue("content"),
+		OwnerID:           session.UserID,
+		AccessLevel:       0,
 		StatusRequirement: 0,
 	}
 	err = h.DB.CreatePage(page)
@@ -162,7 +164,7 @@ func (h *Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error fetching page", http.StatusInternalServerError)
 		return
 	}
-	
+
 	session, err := h.getSession(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -218,7 +220,7 @@ func (h *Handler) ViewUserStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("Your current status: %d", status)))
+	w.Write([]byte(fmt.Sprintf("%d", status)))
 }
 
 func (h *Handler) EarnToken(w http.ResponseWriter, r *http.Request) {
