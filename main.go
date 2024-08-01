@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,61 +15,67 @@ import (
 )
 
 func main() {
-    // Initialize the database
-    db, err := database.NewDB("./subad.db")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
+	// Initialize the database
+	db, err := database.NewDB("./subad.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-    // Initialize the session store
-    sessionStore := sessions.NewSessionStore()
+	// Initialize the database schema
+	if err := initDatabase(db); err != nil {
+		log.Fatal("Error initializing database:", err)
+	}
 
-    // Initialize the router
-    r := chi.NewRouter()
+	// Initialize the session store
+	sessionStore := sessions.NewSessionStore()
 
-    // Middleware
-    r.Use(middleware.Logger)
-    r.Use(middleware.Recoverer)
-    r.Use(middleware.RequestID)
-    r.Use(middleware.RealIP)
+	// Initialize the router
+	r := chi.NewRouter()
 
-    // Serve static files
-    r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	// Middleware
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
 
-    // Initialize handlers
-    h := handlers.NewHandler(db, sessionStore)
+	// Initialize handlers
+	h := handlers.NewHandler(db, sessionStore)
 
-    // Public routes
-    r.Group(func(r chi.Router) {
-        r.Get("/", h.Home)
-        r.Get("/login", h.Login)
-        r.Post("/login", h.LoginPost)
-        r.Get("/register", h.Register)
-        r.Post("/register", h.RegisterPost)
-    })
+	// Public routes
+	r.Group(func(r chi.Router) {
+		r.Get("/", h.Home)
+		r.Get("/login", h.Login)
+		r.Post("/login", h.LoginPost)
+		r.Get("/register", h.Register)
+		r.Post("/register", h.RegisterPost)
+		r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "static/favicon.ico")
+		})
+	})
 
-    // Protected routes
-    r.Group(func(r chi.Router) {
-        r.Use(AuthMiddleware)
-        r.Get("/dashboard", h.Dashboard)
-        r.Get("/logout", h.Logout)
-        r.Post("/pages", h.CreatePage)
-        r.Get("/pages/{id}", h.ViewPage)
-        r.Get("/generate-token", h.GenerateToken)
-        r.Get("/user-status", h.ViewUserStatus)
-        r.Get("/earn-token", h.EarnToken)
-        r.Post("/trade-token", h.TradeToken)
-    })
+	// Protected routes
+	r.Group(func(r chi.Router) {
+		r.Use(AuthMiddleware)
+		r.Get("/dashboard", h.Dashboard)
+		r.Get("/logout", h.Logout)
+		r.Post("/pages", h.CreatePage)
+		r.Get("/pages/{id}", h.ViewPage)
+		r.Get("/generate-token", h.GenerateToken)
+		r.Get("/user-status", h.ViewUserStatus)
+		r.Get("/earn-token", h.EarnToken)
+		r.Post("/trade-token", h.TradeToken)
+	})
 
-    // Start the server
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
-    log.Printf("Server starting on port %s", port)
-    log.Fatal(http.ListenAndServe(":"+port, r))
+	// Start the server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Server starting on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
+
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := r.Cookie("session_id")
@@ -78,4 +85,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func initDatabase(db *database.DB) error {
+	schemaSQL, err := ioutil.ReadFile("schema.sql")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(string(schemaSQL))
+	return err
 }
