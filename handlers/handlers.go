@@ -38,8 +38,16 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Login page"))
+    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/login.html"))
+    err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+        "Title": "Login",
+    })
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
+
 
 func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
@@ -64,7 +72,14 @@ func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Register page"))
+    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/register.html"))
+    err := tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+        "Title": "Register",
+    })
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
 
 func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
@@ -83,19 +98,27 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
-	session, err := h.getSession(r)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
+    session, err := h.getSession(r)
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
 
-	user, err := h.DB.GetUserByID(session.UserID)
-	if err != nil {
-		http.Error(w, "Error fetching user data", http.StatusInternalServerError)
-		return
-	}
-	w.Write([]byte("Dashboard for " + user.Username))
-}
+    user, err := h.DB.GetUserByID(session.UserID)
+    if err != nil {
+        http.Error(w, "Error fetching user data", http.StatusInternalServerError)
+        return
+    }
+
+    tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/dashboard.html"))
+    err = tmpl.ExecuteTemplate(w, "layout", map[string]interface{}{
+        "Title": "Dashboard",
+        "User":  user,
+    })
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := r.Cookie("session_id")
