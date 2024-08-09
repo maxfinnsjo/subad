@@ -20,12 +20,12 @@ type Handler struct {
 	TokenManager *tokens.TokenManager
 }
 
-func NewHandler(db *database.DB, sessions *sessions.SessionStore) *Handler {
-	return &Handler{
-		DB:           db,
-		Sessions:     sessions,
-		TokenManager: tokens.NewTokenManager(db),
-	}
+func NewHandler(db *database.DB, sessions *sessions.SessionStore, tokenManager *tokens.TokenManager) *Handler {
+    return &Handler{
+        DB:           db,
+        Sessions:     sessions,
+        TokenManager: tokenManager,
+    }
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
