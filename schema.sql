@@ -1,6 +1,9 @@
+-- schema.sql
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     role TEXT NOT NULL,
     status INTEGER DEFAULT 0,
@@ -14,7 +17,9 @@ CREATE TABLE IF NOT EXISTS pages (
     content TEXT NOT NULL,
     owner_id INTEGER,
     access_level INTEGER DEFAULT 0,
+    status_requirement INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id)
 );
 
@@ -31,8 +36,20 @@ CREATE TABLE IF NOT EXISTS access_requests (
 CREATE TABLE IF NOT EXISTS status_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    amount INTEGER NOT NULL,
-    transaction_type TEXT NOT NULL,
+    value INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    page_id INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    expires_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (page_id) REFERENCES pages(id)
 );

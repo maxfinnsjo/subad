@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,32 +16,40 @@ import (
 )
 
 func main() {
+	log.Println("Starting Subad application...")
+
 	// Initialize the database
 	db, err := database.NewDB("./subad.db")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer db.Close()
+	log.Println("Database initialized successfully")
 
 	// Initialize the database schema
 	if err := initDatabase(db); err != nil {
-		log.Fatal("Error initializing database:", err)
+		log.Fatalf("Error initializing database schema: %v", err)
 	}
+	log.Println("Database schema initialized successfully")
 
 	// Initialize the session store
 	sessionStore := sessions.NewSessionStore()
+	log.Println("Session store initialized")
 
 	// Initialize the router
 	r := chi.NewRouter()
+	log.Println("Router initialized")
 
 	// Middleware
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	log.Println("Middleware set up")
 
 	// Initialize handlers
 	h := handlers.NewHandler(db, sessionStore)
+	log.Println("Handlers initialized")
 
 	// Public routes
 	r.Group(func(r chi.Router) {
@@ -53,6 +62,7 @@ func main() {
 			http.ServeFile(w, r, "static/favicon/favicon.ico")
 		})		
 	})
+	log.Println("Public routes set up")
 
 	// Protected routes
 	r.Group(func(r chi.Router) {
@@ -66,6 +76,7 @@ func main() {
 		r.Get("/earn-token", h.EarnToken)
 		r.Post("/trade-token", h.TradeToken)
 	})
+	log.Println("Protected routes set up")
 
 	// Start the server
 	port := os.Getenv("PORT")
@@ -73,7 +84,10 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	err = http.ListenAndServe(":"+port, r)
+	if err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -90,8 +104,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 func initDatabase(db *database.DB) error {
 	schemaSQL, err := ioutil.ReadFile("schema.sql")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read schema.sql: %v", err)
 	}
 	_, err = db.Exec(string(schemaSQL))
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to execute schema.sql: %v", err)
+	}
+	return nil
 }
