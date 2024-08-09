@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	_ "net/http/pprof"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -78,18 +79,22 @@ func main() {
 	})
 	log.Println("Protected routes set up")
 
-	// Start the server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	log.Printf("Server starting on port %s", port)
-	err = http.ListenAndServe(":"+port, r)
-	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
-}
+    // Add debug server
+    go func() {
+        log.Println(http.ListenAndServe("localhost:6060", nil))
+    }()
 
+    // Start the server
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+    log.Printf("Server starting on port %s", port)
+    err = http.ListenAndServe(":"+port, r)
+    if err != nil {
+        log.Fatalf("Failed to start server: %v", err)
+    }
+}
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := r.Cookie("session_id")
