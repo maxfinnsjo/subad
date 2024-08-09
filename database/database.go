@@ -67,14 +67,14 @@ func (db *DB) GetUserByUsername(username string) (*models.User, error) {
 }
 
 func (db *DB) CreateUser(user *models.User) error {
-	_, err := db.Exec(`
-		INSERT INTO users (username, email, password, role, status, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-	`, user.Username, user.Email, user.Password, user.Role, user.Status)
-	if err != nil {
-		return fmt.Errorf("error creating user: %w", err)
-	}
-	return nil
+    _, err := db.Exec(`
+        INSERT INTO users (username, email, password, role, created_at, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `, user.Username, user.Email, user.Password, user.Role)
+    if err != nil {
+        return fmt.Errorf("error creating user: %w", err)
+    }
+    return nil
 }
 
 
