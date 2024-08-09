@@ -90,6 +90,12 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
         Password: r.FormValue("password"),
         Role:     "user",
     }
+    
+    // Check if the admin checkbox is checked
+    if r.FormValue("is_admin") == "true" {
+        user.Role = "admin"
+    }
+    
     err := h.DB.CreateUser(user)
     if err != nil {
         log.Printf("Error creating user: %v", err)

@@ -78,6 +78,7 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(AuthMiddleware)
 		r.Get("/dashboard", h.Dashboard)
+		r.Get("/admin", h.AdminDashboard)
 		r.Get("/logout", h.Logout)
 		r.Post("/pages", h.CreatePage)
 		r.Get("/pages/{id}", h.ViewPage)
