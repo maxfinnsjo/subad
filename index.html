@@ -10,11 +10,9 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;padding:0 12px;background:rgba(26,22,37,0.97);display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,0.06)}
-#header .logo{font-weight:700;font-size:17px;color:var(--accent);letter-spacing:-0.5px;margin-right:4px;flex-shrink:0}
-#room-nav{display:flex;align-items:center;gap:4px;flex:1;min-width:0}
-#room-nav select{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:5px 8px;font-size:13px;cursor:pointer;max-width:160px;min-width:60px}
-#room-nav select:focus{outline:none;border-color:var(--accent)}
+#header{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;padding:0 12px;background:rgba(26,22,37,0.97);display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.06)}
+#header .logo{font-weight:700;font-size:17px;color:var(--accent);letter-spacing:-0.5px;margin-right:2px;flex-shrink:0}
+#room-name{font-size:13px;color:var(--accent2);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .btn-sm{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;transition:all 0.15s;flex-shrink:0;line-height:1.4}
 .btn-sm:active{background:var(--card2)}
 #user-info{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);flex-shrink:0}
@@ -41,12 +39,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 /* POSTER */
 .item-poster{background:linear-gradient(135deg,#fefcf0,#f5f0d0);color:#2a2520;min-width:120px;min-height:80px;padding:14px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);border:1px solid #d4ccb0;font-family:'Georgia',serif;line-height:1.5;word-wrap:break-word;white-space:pre-wrap}
 .item-poster:active,.item-poster:hover{box-shadow:0 6px 25px rgba(0,0,0,0.4)}
-
-/* PORTAL */
-.item-portal{background:linear-gradient(135deg,var(--card),#4a3070);border:2px solid var(--accent);min-width:100px;min-height:60px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;box-shadow:0 0 30px rgba(176,136,240,0.15),0 4px 20px var(--shadow)}
-.item-portal:active{box-shadow:0 0 40px rgba(176,136,240,0.3),0 4px 20px var(--shadow)}
-.item-portal .portal-icon{font-size:24px}
-.item-portal .portal-label{font-size:11px;color:var(--accent2);text-align:center;padding:0 8px}
 
 /* IMAGE */
 .item-image{border-radius:8px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);background:var(--card)}
@@ -147,7 +139,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 @media(min-width:768px){
   #header{height:56px;padding:0 20px;gap:12px}
   :root{--header-h:56px;--toolbar-h:64px}
-  #room-nav select{max-width:240px;padding:6px 12px;font-size:14px}
   .btn-sm{padding:6px 14px;font-size:13px}
   #user-info .name{max-width:160px}
   #toolbar{padding:0 12px;justify-content:center}
@@ -167,12 +158,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 
 <div id="header">
   <span class="logo">◈</span>
-  <div id="room-nav">
-    <select id="room-select"></select>
-    <button class="btn-sm" id="btn-new-room">+</button>
-    <button class="btn-sm" id="btn-rename-room" title="Rename">✎</button>
-    <button class="btn-sm" id="btn-delete-room" title="Delete">✕</button>
-  </div>
+  <span class="room-name" id="room-name"></span>
   <div id="user-info">
     <span class="name" id="user-name"></span>
     <span class="xp" id="user-xp">XP</span>
@@ -208,7 +194,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 // ─── STATE ───────────────────────────────────────────────
 const ITEM_TYPES = {
   poster:   { icon:'🖼', label:'Poster',   defaultW:160, defaultH:90 },
-  portal:   { icon:'🌀', label:'Portal',   defaultW:110, defaultH:60 },
   image:    { icon:'📷', label:'Image',    defaultW:140, defaultH:100 },
   gif:      { icon:'✨', label:'GIF',      defaultW:130, defaultH:90 },
   music:    { icon:'🎵', label:'Music',    defaultW:140, defaultH:46 },
@@ -228,11 +213,9 @@ let state = loadState() || freshState();
 let dragItem = null, dragOffX = 0, dragOffY = 0, selectedId = null;
 
 function freshState(){
-  const homeId = 'room_'+Date.now();
   return {
-    user: { name: randomName(), xp: 0, level: 1, rooms: [homeId], following: [], subs: [] },
-    rooms: { [homeId]: { id: homeId, name: '🌙 den', owner: true, items: [], public: true, created: Date.now() } },
-    currentRoom: homeId
+    user: { name: randomName(), xp: 0, level: 1 },
+    room: { id: 'room', name: '🌙 den', items: [] }
   };
 }
 function loadState(){
@@ -249,33 +232,10 @@ function randomName(){
   return pick(pre)+pick(suf);
 }
 
-// ─── ROOM MANAGEMENT ─────────────────────────────────────
-function getRoom(id){ return state.rooms[id] }
-function currentRoom(){ return getRoom(state.currentRoom) }
-function userRooms(){ return state.user.rooms.map(id=>getRoom(id)).filter(Boolean) }
-function addRoom(name){
-  const id = 'room_'+Date.now()+'_'+rand(999);
-  state.rooms[id] = { id, name, owner: true, items: [], public: true, created: Date.now() };
-  state.user.rooms.push(id);
-  state.currentRoom = id;
-  saveState(); render(); xp(XP_PER_ACTION);
-  scrollRoomIntoView(); return id;
-}
-function deleteRoom(id){
-  const rooms = state.user.rooms;
-  if(rooms.length<2) return toast('Need at least one room!');
-  if(!confirm(`Delete "${state.rooms[id]?.name}"? Items will be lost.`)) return;
-  delete state.rooms[id];
-  state.user.rooms = rooms.filter(r=>r!==id);
-  state.currentRoom = state.user.rooms[0];
-  saveState(); render(); xp(XP_PER_ACTION);
-}
-function switchRoom(id){ state.currentRoom = id; saveState(); render(); scrollRoomIntoView() }
-function renameRoom(id, name){ const r = state.rooms[id]; if(r){ r.name = name; saveState(); render() }}
-
-// ─── ITEMS ────────────────────────────────────────────────
+// ─── ROOM ─────────────────────────────────────────────────
+function getRoom(){ return state.room }
 function addItem(type){
-  const room = currentRoom();
+  const room = getRoom();
   if(!room) return;
   const def = ITEM_TYPES[type];
   if(!def) return;
@@ -290,13 +250,11 @@ function addItem(type){
   room.items.push({ id, type, x, y, w, h, data: defaultData(type) });
   selectedId = id;
   saveState(); render(); xp(XP_PER_ACTION);
-  scrollRoomIntoView();
   if(type==='poster' || type==='image' || type==='gif' || type==='music' || type==='link') openEdit(id);
 }
 function defaultData(type){
   switch(type){
     case 'poster': return { text: 'write something...' };
-    case 'portal': return { targetRoom: '', label: 'portal' };
     case 'image': return { url: '' };
     case 'gif': return { url: '' };
     case 'music': return { url: '', name: 'song' };
@@ -309,14 +267,14 @@ function defaultData(type){
   }
 }
 function deleteItem(id){
-  const room = currentRoom();
+  const room = getRoom();
   if(!room) return;
   room.items = room.items.filter(i=>i.id!==id);
   if(selectedId===id) selectedId = null;
   saveState(); render(); xp(XP_PER_ACTION);
 }
 function updateItem(id, data){
-  const room = currentRoom();
+  const room = getRoom();
   if(!room) return;
   const item = room.items.find(i=>i.id===id);
   if(!item) return;
@@ -336,7 +294,7 @@ function xp(amount){
 }
 
 // ─── RENDER ──────────────────────────────────────────────
-function render(){ renderRoomNav(); renderCanvas(); renderToolbar() }
+function render(){ renderRoomName(); renderCanvas(); renderToolbar() }
 function renderUserInfo(){
   const u = state.user;
   document.getElementById('user-name').textContent = u.name;
@@ -344,16 +302,8 @@ function renderUserInfo(){
   const pct = u.level>0 ? (u.xp / (XP_PER_LEVEL*u.level))*100 : 0;
   document.getElementById('xp-bar-fill').style.width = Math.min(pct,100)+'%';
 }
-function renderRoomNav(){
-  const sel = document.getElementById('room-select');
-  sel.innerHTML = '';
-  userRooms().forEach(r=>{
-    const o = document.createElement('option');
-    o.value = r.id; o.textContent = r.name;
-    if(r.id===state.currentRoom) o.selected = true;
-    sel.appendChild(o);
-  });
-  sel.onchange = ()=> switchRoom(sel.value);
+function renderRoomName(){
+  document.getElementById('room-name').textContent = getRoom().name;
   renderUserInfo();
 }
 
@@ -366,7 +316,7 @@ function scrollRoomIntoView(){
 
 function renderCanvas(){
   const canvas = document.getElementById('canvas');
-  const room = currentRoom();
+  const room = getRoom();
   const empty = document.getElementById('empty-state');
   if(!room){ canvas.innerHTML=''; empty.style.display='block'; return }
   canvas.innerHTML = '';
@@ -409,10 +359,8 @@ function renderItemContent(item){
   const el = document.createElement('div');
   el.style.width='100%'; el.style.height='100%'; el.style.position='relative';
   switch(item.type){
-    case 'poster':
+case 'poster':
       el.textContent = d.text || '...'; break;
-    case 'portal':
-      el.innerHTML = `<div class="portal-icon">🌀</div><div class="portal-label">${escHtml(d.label||'portal')}</div>`; break;
     case 'image':
       if(d.url) el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.innerText='bad url'">`;
       else el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px">📷 tap to set</div>`;
@@ -555,12 +503,6 @@ function endTouchDrag(){
 // ─── ITEM INTERACTIONS ───────────────────────────────────
 function selectItem(id){ selectedId = id; renderCanvas() }
 function onItemClick(item){
-  if(item.type==='portal' && item.data.targetRoom && state.rooms[item.data.targetRoom]){
-    state.currentRoom = item.data.targetRoom;
-    saveState(); render();
-    toast(`🌀 entered ${state.rooms[item.data.targetRoom].name}`);
-    scrollRoomIntoView(); xp(XP_PER_ACTION);
-  }
   if(item.type==='link' && item.data.url){
     window.open(item.data.url, '_blank');
     xp(XP_PER_ACTION);
@@ -582,7 +524,7 @@ function togglePlay(item){
 
 // ─── EDIT MODAL ──────────────────────────────────────────
 function openEdit(id){
-  const room = currentRoom();
+  const room = getRoom();
   const item = room?.items.find(i=>i.id===id);
   if(!item) return;
   const over = document.getElementById('modal-overlay');
@@ -592,10 +534,6 @@ function openEdit(id){
   switch(item.type){
     case 'poster':
       html += `<label>Text</label><textarea id="edit-textarea" rows="4">${escHtml(d.text||'')}</textarea>`; break;
-    case 'portal':
-      const opts = userRooms().filter(r=>r.id!==state.currentRoom).map(r=>`<option value="${r.id}" ${r.id===d.targetRoom?'selected':''}>${escHtml(r.name)}</option>`).join('');
-      html += `<label>Target Room</label><select id="edit-portal-target"><option value="">— choose room —</option>${opts}</select>`;
-      html += `<label>Label</label><input id="edit-portal-label" value="${escHtml(d.label||'')}">`; break;
     case 'image': case 'gif':
       html += `<label>URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...">`; break;
     case 'music':
@@ -616,13 +554,10 @@ function openEdit(id){
 }
 function closeModal(){ document.getElementById('modal-overlay').classList.remove('open') }
 function saveEdit(id){
-  const room = currentRoom(); const item = room?.items.find(i=>i.id===id); if(!item) return;
+  const room = getRoom(); const item = room?.items.find(i=>i.id===id); if(!item) return;
   const data = {};
   switch(item.type){
     case 'poster': data.text = document.getElementById('edit-textarea')?.value || ''; break;
-    case 'portal':
-      data.targetRoom = document.getElementById('edit-portal-target')?.value || '';
-      data.label = document.getElementById('edit-portal-label')?.value || 'portal'; break;
     case 'image': case 'gif': case 'video': data.url = document.getElementById('edit-url')?.value || ''; break;
     case 'music': data.url = document.getElementById('edit-url')?.value || ''; data.name = document.getElementById('edit-music-name')?.value || 'song'; break;
     case 'link': data.url = document.getElementById('edit-url')?.value || ''; data.label = document.getElementById('edit-link-label')?.value || 'link'; break;
@@ -643,10 +578,6 @@ function escHtml(s){ const d=document.createElement('div'); d.textContent=s; ret
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   render();
-  scrollRoomIntoView();
-  document.getElementById('btn-new-room').onclick = ()=>{ const n = prompt('Room name:'); if(n) addRoom(n) };
-  document.getElementById('btn-rename-room').onclick = ()=>{ const r = currentRoom(); if(!r) return; const n = prompt('Rename room:', r.name); if(n) renameRoom(r.id, n) };
-  document.getElementById('btn-delete-room').onclick = ()=>{ const r = currentRoom(); if(r) deleteRoom(r.id) };
   document.getElementById('btn-reset').onclick = ()=>{
     if(confirm('Reset identity? Rooms/items stay.')){ state.user.name = randomName(); state.user.xp=0; state.user.level=1; saveState(); render(); toast('New: '+state.user.name) }
   };
