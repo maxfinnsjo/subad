@@ -2,51 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>subad</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#1a1625;--wall:#2a2338;--wall2:#332b42;--floor:#1a1520;--accent:#b088f0;--accent2:#e8c0ff;--text:#e8e0f0;--text2:#9888b0;--card:#3a3050;--card2:#4a3f62;--shadow:rgba(0,0,0,0.4);--radius:12px;--font:'Inter',system-ui,-apple-system,sans-serif}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;user-select:none}
+:root{--bg:#1a1625;--wall:#2a2338;--wall2:#332b42;--floor:#1a1520;--accent:#b088f0;--accent2:#e8c0ff;--text:#e8e0f0;--text2:#9888b0;--card:#3a3050;--card2:#4a3f62;--shadow:rgba(0,0,0,0.4);--radius:12px;--font:'Inter',system-ui,-apple-system,sans-serif;--header-h:54px;--toolbar-h:64px}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 20px;background:linear-gradient(180deg,rgba(26,22,37,0.98),rgba(26,22,37,0));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-#header .logo{font-weight:700;font-size:18px;color:var(--accent);letter-spacing:-0.5px}
-#room-nav{display:flex;align-items:center;gap:6px;flex:1}
-#room-nav select{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer;max-width:200px}
+#header{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;padding:0 12px;background:rgba(26,22,37,0.97);display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,0.06)}
+#header .logo{font-weight:700;font-size:17px;color:var(--accent);letter-spacing:-0.5px;margin-right:4px;flex-shrink:0}
+#room-nav{display:flex;align-items:center;gap:4px;flex:1;min-width:0}
+#room-nav select{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:5px 8px;font-size:13px;cursor:pointer;max-width:160px;min-width:60px}
 #room-nav select:focus{outline:none;border-color:var(--accent)}
-#room-nav .btn-sm{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;transition:all 0.15s}
-#room-nav .btn-sm:hover{background:var(--card2);border-color:var(--accent)}
-#user-info{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
-#user-info .name{color:var(--accent2);font-weight:600}
-#user-info .xp{background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px}
-.xp-bar{width:60px;height:4px;background:var(--card2);border-radius:2px;overflow:hidden}
+.btn-sm{background:var(--card);color:var(--text);border:1px solid var(--card2);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;transition:all 0.15s;flex-shrink:0;line-height:1.4}
+.btn-sm:active{background:var(--card2)}
+#user-info{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);flex-shrink:0}
+#user-info .name{color:var(--accent2);font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#user-info .xp{background:var(--card);border-radius:20px;padding:2px 8px;font-size:11px;white-space:nowrap}
+.xp-bar{width:50px;height:4px;background:var(--card2);border-radius:2px;overflow:hidden;flex-shrink:0}
 .xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 0.3s}
-.room-name-edit{background:transparent;border:none;color:var(--text);font-size:16px;font-weight:600;padding:2px 6px;border-radius:6px;outline:none;max-width:200px}
-.room-name-edit:focus{background:var(--card);border:1px solid var(--accent)}
 
-/* ROOM CANVAS */
-#canvas{position:fixed;top:70px;left:0;right:0;bottom:80px;background:var(--wall);overflow:hidden}
-#canvas::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.02) 60px,rgba(255,255,255,0.02) 61px),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,0.02) 60px,rgba(255,255,255,0.02) 61px);pointer-events:none}
-#canvas::after{content:'';position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(0deg,var(--floor) 0%,var(--wall) 100%);opacity:0.3;pointer-events:none}
+/* ROOM CANVAS WRAPPER */
+#canvas-wrap{position:fixed;top:var(--header-h);left:0;right:0;bottom:var(--toolbar-h);overflow:auto;-webkit-overflow-scrolling:touch;background:var(--wall)}
+#canvas-wrap::before{content:'';position:fixed;top:var(--header-h);left:0;right:0;bottom:var(--toolbar-h);background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.02) 60px,rgba(255,255,255,0.02) 61px),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,0.02) 60px,rgba(255,255,255,0.02) 61px);pointer-events:none;z-index:0}
+#canvas-wrap::after{content:'';position:fixed;left:0;right:0;bottom:var(--toolbar-h);height:40px;background:linear-gradient(0deg,var(--floor) 0%,var(--wall) 100%);opacity:0.3;pointer-events:none;z-index:1}
+#canvas{position:relative;width:2400px;height:1600px;z-index:2;min-height:100vh}
 
 /* ITEMS */
-.item{position:absolute;cursor:grab;z-index:1;transition:box-shadow 0.2s,transform 0.1s;border-radius:var(--radius)}
-.item:hover{z-index:10}
+.item{position:absolute;cursor:grab;z-index:3;transition:box-shadow 0.2s,transform 0.1s;border-radius:var(--radius);touch-action:none}
+.item:hover{z-index:13}
 .item.dragging{cursor:grabbing;z-index:100;transition:none;filter:brightness(1.1)}
 .item-selected{outline:2px solid var(--accent);outline-offset:2px}
 .item-controls{position:absolute;top:-28px;right:0;display:none;gap:4px;z-index:200}
 .item-selected .item-controls{display:flex}
-.item-controls button{background:var(--card);border:1px solid var(--card2);color:var(--text);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer}
-.item-controls button:hover{background:var(--card2)}
+.item-controls button{background:var(--card);border:1px solid var(--card2);color:var(--text);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.5}
 
 /* POSTER */
-.item-poster{background:linear-gradient(135deg,#fefcf0,#f5f0d0);color:#2a2520;min-width:120px;min-height:80px;padding:14px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);border:1px solid #d4ccb0;font-family:'Georgia',serif;line-height:1.5;word-wrap:break-word;white-space:pre-wrap;cursor:pointer}
-.item-poster:hover{box-shadow:0 6px 25px rgba(0,0,0,0.4)}
+.item-poster{background:linear-gradient(135deg,#fefcf0,#f5f0d0);color:#2a2520;min-width:120px;min-height:80px;padding:14px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);border:1px solid #d4ccb0;font-family:'Georgia',serif;line-height:1.5;word-wrap:break-word;white-space:pre-wrap}
+.item-poster:active,.item-poster:hover{box-shadow:0 6px 25px rgba(0,0,0,0.4)}
 
 /* PORTAL */
-.item-portal{background:linear-gradient(135deg,var(--card),#4a3070);border:2px solid var(--accent);min-width:100px;min-height:60px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;box-shadow:0 0 30px rgba(176,136,240,0.15),0 4px 20px var(--shadow);cursor:pointer}
-.item-portal:hover{box-shadow:0 0 40px rgba(176,136,240,0.3),0 4px 20px var(--shadow)}
+.item-portal{background:linear-gradient(135deg,var(--card),#4a3070);border:2px solid var(--accent);min-width:100px;min-height:60px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;box-shadow:0 0 30px rgba(176,136,240,0.15),0 4px 20px var(--shadow)}
+.item-portal:active{box-shadow:0 0 40px rgba(176,136,240,0.3),0 4px 20px var(--shadow)}
 .item-portal .portal-icon{font-size:24px}
 .item-portal .portal-label{font-size:11px;color:var(--accent2);text-align:center;padding:0 8px}
 
@@ -57,15 +55,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .item-image .url-input input{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:80%;text-align:center}
 
 /* MUSIC */
-.item-music{background:linear-gradient(135deg,#1e1a2e,#2a2040);border:1px solid #504080;min-width:130px;min-height:50px;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:50px;box-shadow:0 4px 15px var(--shadow);cursor:pointer}
-.item-music:hover{border-color:var(--accent)}
-.item-music .play-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;color:#1a1625;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s}
-.item-music .play-btn:hover{transform:scale(1.1)}
+.item-music{background:linear-gradient(135deg,#1e1a2e,#2a2040);border:1px solid #504080;min-width:130px;min-height:50px;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:50px;box-shadow:0 4px 15px var(--shadow)}
+.item-music:active{border-color:var(--accent)}
+.item-music .play-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;color:#1a1625;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:none}
+.item-music .play-btn:active{transform:scale(1.1)}
 .item-music .track-info{flex:1;min-width:0}
 .item-music .track-name{font-size:12px;color:var(--accent2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item-music .track-source{font-size:10px;color:var(--text2)}
-.item-music .url-input{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);border-radius:50px}
-.item-music .url-input input{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:80%;text-align:center}
 
 /* CALENDAR */
 .item-calendar{background:linear-gradient(135deg,#2a2540,#1e1a30);border:1px solid #504070;min-width:140px;min-height:100px;padding:12px;box-shadow:0 4px 20px var(--shadow);display:flex;flex-direction:column;align-items:center}
@@ -74,22 +70,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .item-calendar .cal-weekday{font-size:11px;color:var(--text2);margin-top:2px}
 
 /* LINK */
-.item-link{background:var(--card);border:1px solid var(--card2);min-width:100px;min-height:40px;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:24px;box-shadow:0 4px 15px var(--shadow);cursor:pointer}
-.item-link:hover{border-color:var(--accent);background:var(--card2)}
+.item-link{background:var(--card);border:1px solid var(--card2);min-width:100px;min-height:40px;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:24px;box-shadow:0 4px 15px var(--shadow)}
+.item-link:active{border-color:var(--accent);background:var(--card2)}
 .item-link .link-icon{font-size:16px}
 .item-link .link-label{font-size:12px;color:var(--accent2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 
 /* VIDEO */
 .item-video{background:#000;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);min-width:200px;min-height:120px}
 .item-video video{width:100%;height:100%;display:block}
-.item-video .url-input{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7)}
-.item-video .url-input input{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:80%;text-align:center}
 
 /* GIF */
-.item-gif{background:var(--card);border-radius:8px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);min-width:100px;min-height:80px}
+.item-gif{border-radius:8px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);background:var(--card)}
 .item-gif img{width:100%;height:100%;object-fit:cover;display:block}
 .item-gif .url-input{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6)}
-.item-gif .url-input input{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:80%;text-align:center}
 
 /* MIRROR */
 .item-mirror{background:linear-gradient(135deg,#c0d0e8,#e0e8f8);min-width:80px;min-height:100px;border-radius:4px 4px 8px 8px;box-shadow:0 4px 20px var(--shadow),inset 0 0 30px rgba(200,220,255,0.3);overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #b09070}
@@ -99,84 +92,114 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .item-window{background:linear-gradient(135deg,#1a2a40,#2a4060);min-width:120px;min-height:100px;border-radius:4px;box-shadow:0 4px 20px var(--shadow),inset 0 0 40px rgba(100,150,220,0.1);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;border:4px solid #604030;gap:2px}
 .item-window .window-scene{font-size:36px}
 .item-window .window-label{font-size:9px;color:rgba(200,220,255,0.4);text-transform:uppercase;letter-spacing:2px}
+.item-gif .url-input input,.item-image .url-input input,.item-video .url-input input{background:var(--card);border:1px solid var(--accent);color:var(--text);padding:8px 12px;border-radius:8px;font-size:16px;width:85%;text-align:center;max-width:280px}
 
 /* TOOLBAR */
-#toolbar{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:12px 20px;background:linear-gradient(0deg,rgba(26,22,37,0.98),rgba(26,22,37,0));display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
-.tool-btn{background:var(--card);border:1px solid var(--card2);color:var(--text2);border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s}
-.tool-btn:hover{background:var(--card2);color:var(--text);border-color:var(--accent);transform:translateY(-2px)}
-.tool-btn .icon{font-size:16px}
-.tool-btn .label{font-size:11px}
+#toolbar{position:fixed;bottom:0;left:0;right:0;height:var(--toolbar-h);z-index:100;background:rgba(26,22,37,0.97);border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:0;overflow-x:auto;overflow-y:hidden;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#toolbar::-webkit-scrollbar{display:none}
+.tool-btn{background:transparent;border:none;color:var(--text2);border-radius:8px;padding:6px 10px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;cursor:pointer;transition:color 0.15s;-webkit-tap-highlight-color:transparent;min-height:52px;min-width:52px;justify-content:center}
+.tool-btn:active{color:var(--accent2);background:rgba(255,255,255,0.05)}
+.tool-btn .icon{font-size:20px;line-height:1}
+.tool-btn .label{font-size:9px;line-height:1;white-space:nowrap}
+
+/* TOOLBAR EXPAND BTN + OVERLAY */
+#toolbar-expand{position:fixed;bottom:8px;right:12px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#1a1625;border:none;font-size:22px;z-index:101;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(176,136,240,0.4);cursor:pointer}
+#toolbar-expand:active{transform:scale(0.92)}
+#toolbar-overlay{position:fixed;inset:0;z-index:102;background:rgba(0,0,0,0.5);display:none}
+#toolbar-overlay.open{display:block}
+#toolbar-overlay .toolbar-full{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--card2);border-radius:16px 16px 0 0;padding:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-height:50vh;overflow-y:auto}
+#toolbar-overlay .toolbar-full .tool-btn{padding:10px;border-radius:10px;background:var(--card);min-height:64px}
+#toolbar-overlay .toolbar-full .tool-btn:active{background:var(--card2)}
+#toolbar-overlay .toolbar-full .tool-btn .icon{font-size:24px}
+#toolbar-overlay .toolbar-full .tool-btn .label{font-size:11px;color:var(--text)}
 
 /* MODAL */
-#modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.6);display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
 #modal-overlay.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--card2);border-radius:16px;padding:24px;min-width:320px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
-.modal h3{font-size:16px;color:var(--accent2);margin-bottom:12px}
+.modal{background:var(--card);border:1px solid var(--card2);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 -10px 40px rgba(0,0,0,0.5);animation:slideUp 0.2s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal .drag-handle{width:36px;height:4px;border-radius:2px;background:var(--card2);margin:0 auto 14px}
+.modal h3{font-size:15px;color:var(--accent2);margin-bottom:12px}
 .modal label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:12px}
-.modal input,.modal textarea{width:100%;background:var(--bg);border:1px solid var(--card2);color:var(--text);padding:8px 12px;border-radius:8px;font-size:14px;outline:none}
+.modal input,.modal textarea{width:100%;background:var(--bg);border:1px solid var(--card2);color:var(--text);padding:10px 12px;border-radius:10px;font-size:16px;outline:none}
 .modal input:focus,.modal textarea:focus{border-color:var(--accent)}
-.modal textarea{min-height:80px;resize:vertical;font-family:var(--font)}
-.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.modal-actions button{background:var(--card2);border:1px solid var(--card2);color:var(--text);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer}
+.modal textarea{min-height:80px;resize:vertical;font-family:var(--font);font-size:14px}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:stretch}
+.modal-actions button{flex:1;background:var(--card2);border:1px solid var(--card2);color:var(--text);padding:12px 16px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:500}
 .modal-actions button.primary{background:var(--accent);color:#1a1625;border-color:var(--accent);font-weight:600}
-.modal-actions button:hover{filter:brightness(1.1)}
+.modal-actions button:active{filter:brightness(1.1)}
 
-/* FLOATING NOTIFICATIONS */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:600;background:var(--card);border:1px solid var(--accent);color:var(--accent2);padding:8px 20px;border-radius:20px;font-size:13px;box-shadow:0 4px 20px var(--shadow);opacity:0;transition:opacity 0.3s;pointer-events:none}
+/* TOAST */
+#toast{position:fixed;bottom:calc(var(--toolbar-h) + 16px);left:50%;transform:translateX(-50%);z-index:600;background:var(--card);border:1px solid var(--accent);color:var(--accent2);padding:10px 24px;border-radius:20px;font-size:14px;box-shadow:0 4px 20px var(--shadow);opacity:0;transition:opacity 0.25s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--card2);border-radius:3px}
-
 /* EMPTY STATE */
-.empty-state{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text2);font-size:14px;pointer-events:none}
+.empty-state{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text2);font-size:14px;pointer-events:none;z-index:2}
 .empty-state .icon{font-size:48px;margin-bottom:12px;opacity:0.3}
-.empty-state p{opacity:0.5}
+.empty-state p{opacity:0.5;max-width:260px}
 
-/* RESPONSIVE */
-@media(max-width:600px){
-  #header{padding:10px 14px;gap:8px}
-  #header .logo{font-size:15px}
-  #user-info .xp{display:none}
-  #canvas{top:64px;bottom:70px}
-  #toolbar{padding:8px 10px;gap:4px}
-  .tool-btn{padding:6px 10px;font-size:11px}
-  .tool-btn .label{display:none}
-  .modal{min-width:auto;width:90vw;padding:16px}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px}
+
+/* DESKTOP RESPONSIVE */
+@media(min-width:768px){
+  #header{height:56px;padding:0 20px;gap:12px}
+  :root{--header-h:56px;--toolbar-h:64px}
+  #room-nav select{max-width:240px;padding:6px 12px;font-size:14px}
+  .btn-sm{padding:6px 14px;font-size:13px}
+  #user-info .name{max-width:160px}
+  #toolbar{padding:0 12px;justify-content:center}
+  .tool-btn{padding:8px 14px}
+  .tool-btn .icon{font-size:18px}
+  .tool-btn .label{font-size:10px}
+  #toolbar-expand{display:none!important}
+  #modal-overlay{align-items:center}
+  .modal{border-radius:16px;padding:24px;width:auto;min-width:360px;max-width:90vw}
+  .modal .drag-handle{display:none}
+  .modal-actions{justify-content:flex-end}
+  .modal-actions button{flex:none;padding:8px 20px;font-size:13px}
 }
 </style>
 </head>
 <body>
 
 <div id="header">
-  <span class="logo">◈ subad</span>
+  <span class="logo">◈</span>
   <div id="room-nav">
     <select id="room-select"></select>
-    <button class="btn-sm" id="btn-new-room">+ New</button>
-    <button class="btn-sm" id="btn-rename-room" title="Rename room">✎</button>
-    <button class="btn-sm" id="btn-delete-room" title="Delete room (needs 2+ rooms)">✕</button>
+    <button class="btn-sm" id="btn-new-room">+</button>
+    <button class="btn-sm" id="btn-rename-room" title="Rename">✎</button>
+    <button class="btn-sm" id="btn-delete-room" title="Delete">✕</button>
   </div>
   <div id="user-info">
     <span class="name" id="user-name"></span>
-    <span class="xp" id="user-xp">XP 0</span>
+    <span class="xp" id="user-xp">XP</span>
     <span class="xp-bar"><span class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></span></span>
-    <button class="btn-sm" id="btn-reset" title="Reset identity">↻</button>
+    <button class="btn-sm" id="btn-reset" title="New identity">↻</button>
   </div>
 </div>
 
-<div id="canvas">
-  <div class="empty-state" id="empty-state">
-    <div class="icon">◈</div>
-    <p>Your room is empty — grab something from the toolbar below</p>
+<div id="canvas-wrap">
+  <div id="canvas">
+    <div class="empty-state" id="empty-state">
+      <div class="icon">◈</div>
+      <p>Your room is empty — tap + below to add something</p>
+    </div>
   </div>
 </div>
 
 <div id="toolbar"></div>
+<button id="toolbar-expand">+</button>
+<div id="toolbar-overlay">
+  <div class="toolbar-full" id="toolbar-full"></div>
+</div>
 
 <div id="modal-overlay">
-  <div class="modal" id="modal-content"></div>
+  <div class="modal" id="modal-content">
+    <div class="drag-handle"></div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -184,24 +207,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 <script>
 // ─── STATE ───────────────────────────────────────────────
 const ITEM_TYPES = {
-  poster:   { icon:'🖼', label:'Poster',   defaultW:180, defaultH:100 },
-  portal:   { icon:'🌀', label:'Portal',   defaultW:120, defaultH:70 },
-  image:    { icon:'📷', label:'Image',    defaultW:160, defaultH:120 },
-  gif:      { icon:'✨', label:'GIF',      defaultW:140, defaultH:100 },
-  music:    { icon:'🎵', label:'Music',    defaultW:150, defaultH:50 },
-  video:    { icon:'🎬', label:'Video',    defaultW:240, defaultH:140 },
-  calendar: { icon:'📅', label:'Calendar', defaultW:140, defaultH:100 },
-  link:     { icon:'🔗', label:'Link',     defaultW:120, defaultH:40 },
-  mirror:   { icon:'🪞', label:'Mirror',   defaultW:80,  defaultH:110 },
-  window:   { icon:'🪟', label:'Window',   defaultW:130, defaultH:100 },
+  poster:   { icon:'🖼', label:'Poster',   defaultW:160, defaultH:90 },
+  portal:   { icon:'🌀', label:'Portal',   defaultW:110, defaultH:60 },
+  image:    { icon:'📷', label:'Image',    defaultW:140, defaultH:100 },
+  gif:      { icon:'✨', label:'GIF',      defaultW:130, defaultH:90 },
+  music:    { icon:'🎵', label:'Music',    defaultW:140, defaultH:46 },
+  video:    { icon:'🎬', label:'Video',    defaultW:220, defaultH:130 },
+  calendar: { icon:'📅', label:'Calendar', defaultW:130, defaultH:90 },
+  link:     { icon:'🔗', label:'Link',     defaultW:110, defaultH:38 },
+  mirror:   { icon:'🪞', label:'Mirror',   defaultW:70,  defaultH:100 },
+  window:   { icon:'🪟', label:'Window',   defaultW:120, defaultH:90 },
 };
-
+const isMobile = window.innerWidth < 768;
+const MOBILE_SCALE = 0.7;
 const WALL_W = 2400, WALL_H = 1600;
 const XP_PER_ACTION = 5;
 const XP_PER_LEVEL = 100;
 
 let state = loadState() || freshState();
-let dragItem = null, dragOffX = 0, dragOffY = 0, selectedId = null, audioCtx = null;
+let dragItem = null, dragOffX = 0, dragOffY = 0, selectedId = null;
 
 function freshState(){
   const homeId = 'room_'+Date.now();
@@ -211,18 +235,14 @@ function freshState(){
     currentRoom: homeId
   };
 }
-
 function loadState(){
   try{ const d = localStorage.getItem('subad'); return d ? JSON.parse(d) : null }catch(e){ return null }
 }
-
 function saveState(){
   try{ localStorage.setItem('subad', JSON.stringify(state)) }catch(e){}
 }
-
 function rand(n){ return Math.floor(Math.random()*n) }
 function pick(a){ return a[rand(a.length)] }
-
 function randomName(){
   const pre = ['luna','nova','echo','vox','zephyr','ember','shade','flux','knot','myth','rift','veil','onyx','sage','wisp','orb','zen','fizz','glim','dusk'];
   const suf = ['fox','owl','bee','ray','cat','moth','bug','fin','pod','cap','dot','bit','pea','yak','elf','orb','ink','ash','ivy','elm'];
@@ -233,17 +253,14 @@ function randomName(){
 function getRoom(id){ return state.rooms[id] }
 function currentRoom(){ return getRoom(state.currentRoom) }
 function userRooms(){ return state.user.rooms.map(id=>getRoom(id)).filter(Boolean) }
-
 function addRoom(name){
   const id = 'room_'+Date.now()+'_'+rand(999);
   state.rooms[id] = { id, name, owner: true, items: [], public: true, created: Date.now() };
   state.user.rooms.push(id);
   state.currentRoom = id;
-  saveState(); render();
-  xp(XP_PER_ACTION);
-  return id;
+  saveState(); render(); xp(XP_PER_ACTION);
+  scrollRoomIntoView(); return id;
 }
-
 function deleteRoom(id){
   const rooms = state.user.rooms;
   if(rooms.length<2) return toast('Need at least one room!');
@@ -251,12 +268,9 @@ function deleteRoom(id){
   delete state.rooms[id];
   state.user.rooms = rooms.filter(r=>r!==id);
   state.currentRoom = state.user.rooms[0];
-  saveState(); render();
-  xp(XP_PER_ACTION);
+  saveState(); render(); xp(XP_PER_ACTION);
 }
-
-function switchRoom(id){ state.currentRoom = id; saveState(); render() }
-
+function switchRoom(id){ state.currentRoom = id; saveState(); render(); scrollRoomIntoView() }
 function renameRoom(id, name){ const r = state.rooms[id]; if(r){ r.name = name; saveState(); render() }}
 
 // ─── ITEMS ────────────────────────────────────────────────
@@ -266,18 +280,19 @@ function addItem(type){
   const def = ITEM_TYPES[type];
   if(!def) return;
   const id = 'item_'+Date.now()+'_'+rand(999);
-  const x = rand(Math.max(100, WALL_W-200));
-  const y = rand(Math.max(100, WALL_H-200));
-  room.items.push({
-    id, type, x, y, w: def.defaultW, h: def.defaultH,
-    data: defaultData(type)
-  });
+  const scale = isMobile ? MOBILE_SCALE : 1;
+  const w = Math.round(def.defaultW * scale);
+  const h = Math.round(def.defaultH * scale);
+  const vw = document.getElementById('canvas-wrap').clientWidth;
+  const vh = document.getElementById('canvas-wrap').clientHeight;
+  const x = rand(Math.max(20, Math.min(WALL_W - w - 20, (WALL_W - vw) / 2 + vw/2 - w)));
+  const y = rand(Math.max(20, Math.min(WALL_H - h - 20, (WALL_H - vh) / 2 + vh/2 - h)));
+  room.items.push({ id, type, x, y, w, h, data: defaultData(type) });
   selectedId = id;
-  saveState(); render();
-  xp(XP_PER_ACTION);
-  if(type==='poster') openEdit(id);
+  saveState(); render(); xp(XP_PER_ACTION);
+  scrollRoomIntoView();
+  if(type==='poster' || type==='image' || type==='gif' || type==='music' || type==='link') openEdit(id);
 }
-
 function defaultData(type){
   switch(type){
     case 'poster': return { text: 'write something...' };
@@ -293,16 +308,13 @@ function defaultData(type){
     default: return {};
   }
 }
-
 function deleteItem(id){
   const room = currentRoom();
   if(!room) return;
   room.items = room.items.filter(i=>i.id!==id);
   if(selectedId===id) selectedId = null;
-  saveState(); render();
-  xp(XP_PER_ACTION);
+  saveState(); render(); xp(XP_PER_ACTION);
 }
-
 function updateItem(id, data){
   const room = currentRoom();
   if(!room) return;
@@ -324,34 +336,32 @@ function xp(amount){
 }
 
 // ─── RENDER ──────────────────────────────────────────────
-function render(){
-  renderRoomNav();
-  renderCanvas();
-  renderToolbar();
-}
-
+function render(){ renderRoomNav(); renderCanvas(); renderToolbar() }
 function renderUserInfo(){
   const u = state.user;
   document.getElementById('user-name').textContent = u.name;
-  document.getElementById('user-xp').textContent = `Lv ${u.level} · ${u.xp}/${XP_PER_LEVEL*u.level} XP`;
+  document.getElementById('user-xp').textContent = `Lv${u.level} ${u.xp}/${XP_PER_LEVEL*u.level}`;
   const pct = u.level>0 ? (u.xp / (XP_PER_LEVEL*u.level))*100 : 0;
   document.getElementById('xp-bar-fill').style.width = Math.min(pct,100)+'%';
 }
-
 function renderRoomNav(){
   const sel = document.getElementById('room-select');
-  const cur = currentRoom();
   sel.innerHTML = '';
   userRooms().forEach(r=>{
     const o = document.createElement('option');
-    o.value = r.id;
-    o.textContent = r.name;
+    o.value = r.id; o.textContent = r.name;
     if(r.id===state.currentRoom) o.selected = true;
     sel.appendChild(o);
   });
   sel.onchange = ()=> switchRoom(sel.value);
-  document.getElementById('user-name').textContent = state.user.name;
   renderUserInfo();
+}
+
+function scrollRoomIntoView(){
+  requestAnimationFrame(()=>{
+    const wrap = document.getElementById('canvas-wrap');
+    wrap.scrollTo({ left: Math.max(0, WALL_W/2 - wrap.clientWidth/2), top: Math.max(0, WALL_H/2 - wrap.clientHeight/2), behavior:'smooth' });
+  });
 }
 
 function renderCanvas(){
@@ -359,9 +369,6 @@ function renderCanvas(){
   const room = currentRoom();
   const empty = document.getElementById('empty-state');
   if(!room){ canvas.innerHTML=''; empty.style.display='block'; return }
-
-  // Dimension canvas
-  canvas.style.position = 'relative';
   canvas.innerHTML = '';
   empty.style.display = room.items.length===0 ? 'block' : 'none';
 
@@ -369,179 +376,190 @@ function renderCanvas(){
     const el = document.createElement('div');
     el.className = `item item-${item.type}`;
     if(selectedId===item.id) el.classList.add('item-selected');
-    el.style.left = item.x+'px';
-    el.style.top = item.y+'px';
-    el.style.width = item.w+'px';
-    el.style.height = item.h+'px';
+    el.style.left = item.x+'px'; el.style.top = item.y+'px';
+    el.style.width = item.w+'px'; el.style.height = item.h+'px';
+    el.dataset.itemId = item.id;
 
     // Controls
     const ctrls = document.createElement('div');
     ctrls.className = 'item-controls';
-    const btnEdit = document.createElement('button');
-    btnEdit.textContent = '✎';
-    btnEdit.title = 'Edit';
+    const btnEdit = document.createElement('button'); btnEdit.textContent = '✎';
     btnEdit.onclick = (e)=>{ e.stopPropagation(); openEdit(item.id) };
-    const btnDel = document.createElement('button');
-    btnDel.textContent = '✕';
-    btnDel.title = 'Delete';
+    const btnDel = document.createElement('button'); btnDel.textContent = '✕';
     btnDel.onclick = (e)=>{ e.stopPropagation(); deleteItem(item.id) };
-    ctrls.append(btnEdit, btnDel);
-    el.appendChild(ctrls);
+    ctrls.append(btnEdit, btnDel); el.appendChild(ctrls);
 
     // Inner content
-    const inner = renderItemContent(item);
-    el.appendChild(inner);
+    el.appendChild(renderItemContent(item));
 
-    // Events
-    el.onmousedown = (e)=>{ if(e.button!==0) return; selectItem(item.id); startDrag(e, item); };
-    el.onclick = (e)=>{ e.stopPropagation(); selectItem(item.id); onItemClick(item); };
-    el.ondblclick = (e)=>{ e.stopPropagation(); openEdit(item.id) };
+    // Events: mouse + touch
+    el.addEventListener('mousedown', e=>{ if(e.button!==0) return; selectItem(item.id); startDrag(e, item, el) });
+    el.addEventListener('touchstart', e=>{ selectItem(item.id); startTouchDrag(e, item, el) }, {passive:false});
+    el.addEventListener('click', e=>{ e.stopPropagation(); selectItem(item.id); onItemClick(item) });
+    el.addEventListener('dblclick', e=>{ e.stopPropagation(); openEdit(item.id) });
 
     canvas.appendChild(el);
   });
 
-  // Deselect on canvas click
-  canvas.onmousedown = (e)=>{
-    if(e.target===canvas || e.target===empty || e.target.parentElement===empty){
-      selectedId = null; render();
-    }
-  };
+  canvas.onmousedown = e=>{ if(e.target===canvas || e.target===empty || e.target.parentElement===empty){ selectedId=null; render() }};
 }
 
 function renderItemContent(item){
   const d = item.data;
   const el = document.createElement('div');
   el.style.width='100%'; el.style.height='100%'; el.style.position='relative';
-
   switch(item.type){
     case 'poster':
-      el.textContent = d.text || '...';
-      el.style.cursor = 'pointer';
-      break;
+      el.textContent = d.text || '...'; break;
     case 'portal':
-      el.innerHTML = `<div class="portal-icon">🌀</div><div class="portal-label">${escHtml(d.label||'portal')}</div>`;
-      break;
+      el.innerHTML = `<div class="portal-icon">🌀</div><div class="portal-label">${escHtml(d.label||'portal')}</div>`; break;
     case 'image':
-      if(d.url){
-        el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div class=url-input><input placeholder=image-url value='${escHtml(d.url)}'></div>'">`;
-      } else {
-        el.innerHTML = `<div class="url-input"><input placeholder="Paste image URL..." value=""></div>`;
-        const inp = el.querySelector('input');
-        if(inp) inp.onchange = ()=>{ updateItem(item.id,{url:inp.value}); renderCanvas() };
-      }
+      if(d.url) el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.innerText='bad url'">`;
+      else el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px">📷 tap to set</div>`;
       break;
     case 'gif':
-      if(d.url){
-        el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div class=url-input><input placeholder=gif-url value='${escHtml(d.url)}'></div>'">`;
-      } else {
-        el.innerHTML = `<div class="url-input"><input placeholder="Paste GIF URL..." value=""></div>`;
-        const inp = el.querySelector('input');
-        if(inp) inp.onchange = ()=>{ updateItem(item.id,{url:inp.value}); renderCanvas() };
-      }
+      if(d.url) el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.innerText='bad url'">`;
+      else el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px">✨ tap to set</div>`;
       break;
     case 'music':
-      el.innerHTML = `
-        <button class="play-btn">▶</button>
-        <div class="track-info">
-          <div class="track-name">${escHtml(d.name||'song')}</div>
-          <div class="track-source">${d.url ? '🔊 ready' : 'click to set'}</div>
-        </div>`;
-      const playBtn = el.querySelector('.play-btn');
-      playBtn.onclick = (e)=>{ e.stopPropagation(); togglePlay(item) };
+      el.innerHTML = `<button class="play-btn">▶</button><div class="track-info"><div class="track-name">${escHtml(d.name||'song')}</div><div class="track-source">${d.url ? '🔊' : 'set url'}</div></div>`;
+      el.querySelector('.play-btn').onclick = e=>{ e.stopPropagation(); togglePlay(item) };
       break;
     case 'video':
-      if(d.url){
-        el.innerHTML = `<video src="${escHtml(d.url)}" controls style="width:100%;height:100%"></video>`;
-      } else {
-        el.innerHTML = `<div class="url-input"><input placeholder="Paste video URL..." value=""></div>`;
-        const inp = el.querySelector('input');
-        if(inp) inp.onchange = ()=>{ updateItem(item.id,{url:inp.value}); renderCanvas() };
-      }
+      if(d.url) el.innerHTML = `<video src="${escHtml(d.url)}" controls playsinline style="width:100%;height:100%"></video>`;
+      else el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px">🎬 tap to set</div>`;
       break;
     case 'calendar':
       const now = new Date();
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      el.innerHTML = `
-        <div class="cal-month">${months[now.getMonth()]} ${now.getFullYear()}</div>
-        <div class="cal-day">${now.getDate()}</div>
-        <div class="cal-weekday">${days[now.getDay()]}</div>`;
+      el.innerHTML = `<div class="cal-month">${months[now.getMonth()]} ${now.getFullYear()}</div><div class="cal-day">${now.getDate()}</div><div class="cal-weekday">${days[now.getDay()]}</div>`;
       break;
     case 'link':
-      el.innerHTML = `<span class="link-icon">🔗</span><span class="link-label">${escHtml(d.label||'link')}</span>`;
-      break;
+      el.innerHTML = `<span class="link-icon">🔗</span><span class="link-label">${escHtml(d.label||'link')}</span>`; break;
     case 'mirror':
-      el.innerHTML = `<div class="mirror-inner">🪞</div>`;
-      break;
+      el.innerHTML = `<div class="mirror-inner">🪞</div>`; break;
     case 'window':
       const scenes = ['🌲🌲🌲','🌊🌊🌊','🏔🏔🏔','🌃🌃🌃','☁️☁️☁️','🌅🌅🌅'];
-      const scene = pick(scenes);
-      el.innerHTML = `<div class="window-scene">${scene}</div><div class="window-label">${item.type}</div>`;
-      break;
+      el.innerHTML = `<div class="window-scene">${pick(scenes)}</div><div class="window-label">window</div>`; break;
   }
   return el;
 }
 
+// ─── TOOLBAR ──────────────────────────────────────────────
+let toolbarExpanded = false;
 function renderToolbar(){
   const bar = document.getElementById('toolbar');
-  bar.innerHTML = '';
-  Object.entries(ITEM_TYPES).forEach(([type,def])=>{
+  const full = document.getElementById('toolbar-full');
+  const expandBtn = document.getElementById('toolbar-expand');
+  bar.innerHTML = ''; full.innerHTML = '';
+
+  const entries = Object.entries(ITEM_TYPES);
+  const getBtn = ([type,def]) => {
     const btn = document.createElement('button');
     btn.className = 'tool-btn';
     btn.innerHTML = `<span class="icon">${def.icon}</span><span class="label">${def.label}</span>`;
-    btn.onclick = ()=> addItem(type);
-    bar.appendChild(btn);
-  });
+    btn.onclick = ()=>{ addItem(type); if(toolbarExpanded) toggleToolbarExpand() };
+    return btn;
+  };
+
+  if(isMobile){
+    entries.forEach(e=> bar.appendChild(getBtn(e)));
+    full.append(...entries.map(e=>getBtn(e)));
+    expandBtn.style.display = document.getElementById('toolbar-overlay').classList.contains('open') ? 'none' : 'flex';
+  } else {
+    entries.forEach(e=> bar.appendChild(getBtn(e)));
+    expandBtn.style.display = 'none';
+  }
 }
 
-// ─── DRAG ────────────────────────────────────────────────
-function startDrag(e, item){
-  dragItem = item;
-  const el = e.target.closest('.item');
-  if(!el) return;
+function toggleToolbarExpand(){
+  toolbarExpanded = !toolbarExpanded;
+  document.getElementById('toolbar-overlay').classList.toggle('open', toolbarExpanded);
+  document.getElementById('toolbar-expand').textContent = toolbarExpanded ? '✕' : '+';
+  document.getElementById('toolbar-expand').style.display = 'flex';
+}
+document.getElementById('toolbar-overlay').onclick = (e)=>{
+  if(e.target===document.getElementById('toolbar-overlay')) toggleToolbarExpand();
+};
+
+// ─── DRAG (MOUSE) ────────────────────────────────────────
+function startDrag(e, item, el){
+  dragItem = { item, el };
   const rect = el.getBoundingClientRect();
-  dragOffX = e.clientX - rect.left;
-  dragOffY = e.clientY - rect.top;
-  dragItem._el = el;
+  const wrap = document.getElementById('canvas-wrap');
+  dragOffX = e.clientX - rect.left + wrap.scrollLeft;
+  dragOffY = e.clientY - rect.top + wrap.scrollTop;
   el.classList.add('dragging');
   document.addEventListener('mousemove', onDrag);
   document.addEventListener('mouseup', endDrag);
 }
-
 function onDrag(e){
-  if(!dragItem || !dragItem._el) return;
-  const canvas = document.getElementById('canvas');
-  const rect = canvas.getBoundingClientRect();
-  let x = e.clientX - rect.left - dragOffX;
-  let y = e.clientY - rect.top - dragOffY;
-  x = Math.max(0, Math.min(WALL_W - dragItem.w, x));
-  y = Math.max(0, Math.min(WALL_H - dragItem.h, y));
-  dragItem.x = x;
-  dragItem.y = y;
-  dragItem._el.style.left = x+'px';
-  dragItem._el.style.top = y+'px';
+  if(!dragItem) return;
+  const wrap = document.getElementById('canvas-wrap');
+  let x = e.clientX - wrap.getBoundingClientRect().left + wrap.scrollLeft - dragOffX;
+  let y = e.clientY - wrap.getBoundingClientRect().top + wrap.scrollTop - dragOffY;
+  x = Math.max(0, Math.min(WALL_W - dragItem.item.w, x));
+  y = Math.max(0, Math.min(WALL_H - dragItem.item.h, y));
+  dragItem.item.x = x; dragItem.item.y = y;
+  dragItem.el.style.left = x+'px'; dragItem.el.style.top = y+'px';
 }
-
 function endDrag(){
   if(dragItem){
-    if(dragItem._el) dragItem._el.classList.remove('dragging');
-    delete dragItem._el;
-    saveState();
-    xp(1);
+    dragItem.el.classList.remove('dragging');
+    saveState(); xp(1);
   }
   dragItem = null;
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('mouseup', endDrag);
 }
 
+// ─── DRAG (TOUCH) ────────────────────────────────────────
+function startTouchDrag(e, item, el){
+  e.preventDefault();
+  const t = e.touches[0];
+  dragItem = { item, el };
+  const rect = el.getBoundingClientRect();
+  const wrap = document.getElementById('canvas-wrap');
+  dragOffX = t.clientX - rect.left + wrap.scrollLeft;
+  dragOffY = t.clientY - rect.top + wrap.scrollTop;
+  el.classList.add('dragging');
+  document.addEventListener('touchmove', onTouchDrag, {passive:false});
+  document.addEventListener('touchend', endTouchDrag);
+  document.addEventListener('touchcancel', endTouchDrag);
+}
+function onTouchDrag(e){
+  e.preventDefault();
+  if(!dragItem) return;
+  const t = e.touches[0];
+  const wrap = document.getElementById('canvas-wrap');
+  const wrapRect = wrap.getBoundingClientRect();
+  let x = t.clientX - wrapRect.left + wrap.scrollLeft - dragOffX;
+  let y = t.clientY - wrapRect.top + wrap.scrollTop - dragOffY;
+  x = Math.max(0, Math.min(WALL_W - dragItem.item.w, x));
+  y = Math.max(0, Math.min(WALL_H - dragItem.item.h, y));
+  dragItem.item.x = x; dragItem.item.y = y;
+  dragItem.el.style.left = x+'px'; dragItem.el.style.top = y+'px';
+}
+function endTouchDrag(){
+  if(dragItem){
+    dragItem.el.classList.remove('dragging');
+    saveState(); xp(1);
+  }
+  dragItem = null;
+  document.removeEventListener('touchmove', onTouchDrag);
+  document.removeEventListener('touchend', endTouchDrag);
+  document.removeEventListener('touchcancel', endTouchDrag);
+}
+
 // ─── ITEM INTERACTIONS ───────────────────────────────────
 function selectItem(id){ selectedId = id; renderCanvas() }
-
 function onItemClick(item){
   if(item.type==='portal' && item.data.targetRoom && state.rooms[item.data.targetRoom]){
     state.currentRoom = item.data.targetRoom;
-    saveState(); render(); toast(`🌀 entered ${state.rooms[item.data.targetRoom].name}`);
-    xp(XP_PER_ACTION);
+    saveState(); render();
+    toast(`🌀 entered ${state.rooms[item.data.targetRoom].name}`);
+    scrollRoomIntoView(); xp(XP_PER_ACTION);
   }
   if(item.type==='link' && item.data.url){
     window.open(item.data.url, '_blank');
@@ -554,18 +572,11 @@ let currentAudio = null;
 function togglePlay(item){
   if(!item.data.url) return openEdit(item.id);
   try{
-    if(currentAudio && !currentAudio.paused){
-      currentAudio.pause();
-      currentAudio = null;
-      renderCanvas(); return;
-    }
+    if(currentAudio && !currentAudio.paused){ currentAudio.pause(); currentAudio = null; renderCanvas(); return; }
     const audio = new Audio(item.data.url);
     audio.loop = true;
     audio.onended = ()=>{ currentAudio = null; renderCanvas() };
-    audio.play().then(()=>{
-      currentAudio = audio;
-      renderCanvas();
-    }).catch(()=> toast('Audio blocked — need user interaction'));
+    audio.play().then(()=>{ currentAudio = audio; renderCanvas() }).catch(()=> toast('Audio blocked'));
   }catch(e){ toast('Invalid audio URL') }
 }
 
@@ -576,94 +587,54 @@ function openEdit(id){
   if(!item) return;
   const over = document.getElementById('modal-overlay');
   const cont = document.getElementById('modal-content');
-
-  let html = `<h3>✎ ${ITEM_TYPES[item.type]?.label||'Item'}</h3>`;
+  let html = `<div class="drag-handle"></div><h3>${ITEM_TYPES[item.type]?.icon||'✎'} ${ITEM_TYPES[item.type]?.label||'Item'}</h3>`;
   const d = item.data;
-
   switch(item.type){
     case 'poster':
-      html += `<label>Text</label><textarea id="edit-textarea" rows="4">${escHtml(d.text||'')}</textarea>`;
-      break;
+      html += `<label>Text</label><textarea id="edit-textarea" rows="4">${escHtml(d.text||'')}</textarea>`; break;
     case 'portal':
-      const opts = userRooms().filter(r=>r.id!==state.currentRoom).map(r=>
-        `<option value="${r.id}" ${r.id===d.targetRoom?'selected':''}>${escHtml(r.name)}</option>`
-      ).join('');
+      const opts = userRooms().filter(r=>r.id!==state.currentRoom).map(r=>`<option value="${r.id}" ${r.id===d.targetRoom?'selected':''}>${escHtml(r.name)}</option>`).join('');
       html += `<label>Target Room</label><select id="edit-portal-target"><option value="">— choose room —</option>${opts}</select>`;
-      html += `<label>Label</label><input id="edit-portal-label" value="${escHtml(d.label||'')}">`;
-      break;
-    case 'image':
-    case 'gif':
-      html += `<label>URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://example.com/image.jpg">`;
-      break;
+      html += `<label>Label</label><input id="edit-portal-label" value="${escHtml(d.label||'')}">`; break;
+    case 'image': case 'gif':
+      html += `<label>URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...">`; break;
     case 'music':
-      html += `<label>Audio URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://example.com/song.mp3">`;
-      html += `<label>Name</label><input id="edit-music-name" value="${escHtml(d.name||'song')}">`;
-      break;
+      html += `<label>Audio URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...mp3">`;
+      html += `<label>Name</label><input id="edit-music-name" value="${escHtml(d.name||'song')}">`; break;
     case 'video':
-      html += `<label>Video URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://example.com/video.mp4">`;
-      break;
+      html += `<label>Video URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...mp4">`; break;
     case 'link':
       html += `<label>URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...">`;
-      html += `<label>Label</label><input id="edit-link-label" value="${escHtml(d.label||'link')}">`;
-      break;
+      html += `<label>Label</label><input id="edit-link-label" value="${escHtml(d.label||'link')}">`; break;
     default:
-      html += `<p style="color:var(--text2);font-size:13px">Nothing to configure for this item.</p>`;
+      html += `<p style="color:var(--text2);font-size:13px">Nothing to configure.</p>`;
   }
-
   html += `<div class="modal-actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="saveEdit('${id}')">Save</button></div>`;
   cont.innerHTML = html;
   over.classList.add('open');
-
-  // auto-focus
-  setTimeout(()=>{
-    const inp = cont.querySelector('input,textarea,select');
-    if(inp) inp.focus();
-  },100);
+  setTimeout(()=>{ const inp = cont.querySelector('input,textarea,select'); if(inp) inp.focus() },150);
 }
-
-function closeModal(){
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open') }
 function saveEdit(id){
-  const room = currentRoom();
-  const item = room?.items.find(i=>i.id===id);
-  if(!item) return;
+  const room = currentRoom(); const item = room?.items.find(i=>i.id===id); if(!item) return;
   const data = {};
   switch(item.type){
-    case 'poster':
-      data.text = document.getElementById('edit-textarea')?.value || '';
-      break;
+    case 'poster': data.text = document.getElementById('edit-textarea')?.value || ''; break;
     case 'portal':
       data.targetRoom = document.getElementById('edit-portal-target')?.value || '';
-      data.label = document.getElementById('edit-portal-label')?.value || 'portal';
-      break;
-    case 'image':
-    case 'gif':
-    case 'video':
-      data.url = document.getElementById('edit-url')?.value || '';
-      break;
-    case 'music':
-      data.url = document.getElementById('edit-url')?.value || '';
-      data.name = document.getElementById('edit-music-name')?.value || 'song';
-      break;
-    case 'link':
-      data.url = document.getElementById('edit-url')?.value || '';
-      data.label = document.getElementById('edit-link-label')?.value || 'link';
-      break;
+      data.label = document.getElementById('edit-portal-label')?.value || 'portal'; break;
+    case 'image': case 'gif': case 'video': data.url = document.getElementById('edit-url')?.value || ''; break;
+    case 'music': data.url = document.getElementById('edit-url')?.value || ''; data.name = document.getElementById('edit-music-name')?.value || 'song'; break;
+    case 'link': data.url = document.getElementById('edit-url')?.value || ''; data.label = document.getElementById('edit-link-label')?.value || 'link'; break;
   }
-  updateItem(id, data);
-  closeModal();
-  toast('Saved');
+  updateItem(id, data); closeModal(); toast('Saved');
 }
 
 // ─── TOAST ────────────────────────────────────────────────
 function toast(msg){
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(()=> el.classList.remove('show'), 2500);
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=> el.classList.remove('show'), 2500);
 }
 
 // ─── UTILS ────────────────────────────────────────────────
@@ -672,46 +643,25 @@ function escHtml(s){ const d=document.createElement('div'); d.textContent=s; ret
 // ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   render();
-
-  // New room
-  document.getElementById('btn-new-room').onclick = ()=>{
-    const name = prompt('Room name:');
-    if(name) addRoom(name);
-  };
-
-  // Rename room
-  document.getElementById('btn-rename-room').onclick = ()=>{
-    const room = currentRoom();
-    if(!room) return;
-    const name = prompt('Rename room:', room.name);
-    if(name) renameRoom(room.id, name);
-  };
-
-  // Delete room
-  document.getElementById('btn-delete-room').onclick = ()=>{
-    const room = currentRoom();
-    if(room) deleteRoom(room.id);
-  };
-
-  // Reset identity
+  scrollRoomIntoView();
+  document.getElementById('btn-new-room').onclick = ()=>{ const n = prompt('Room name:'); if(n) addRoom(n) };
+  document.getElementById('btn-rename-room').onclick = ()=>{ const r = currentRoom(); if(!r) return; const n = prompt('Rename room:', r.name); if(n) renameRoom(r.id, n) };
+  document.getElementById('btn-delete-room').onclick = ()=>{ const r = currentRoom(); if(r) deleteRoom(r.id) };
   document.getElementById('btn-reset').onclick = ()=>{
-    if(confirm('Reset your identity? All rooms/items stay but you get a new name.')){
-      state.user.name = randomName();
-      state.user.xp = 0;
-      state.user.level = 1;
-      saveState(); render();
-      toast('New identity: '+state.user.name);
-    }
+    if(confirm('Reset identity? Rooms/items stay.')){ state.user.name = randomName(); state.user.xp=0; state.user.level=1; saveState(); render(); toast('New: '+state.user.name) }
   };
-
-  // Global key shortcuts
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape') closeModal();
     if(e.key==='Delete' && selectedId){ deleteItem(selectedId); selectedId=null }
   });
+  // Swipe down to close modal
+  let modalTouchStart = 0;
+  document.getElementById('modal-overlay').addEventListener('touchstart', e=>{ modalTouchStart = e.touches[0].clientY }, {passive:true});
+  document.getElementById('modal-overlay').addEventListener('touchmove', e=>{
+    const dy = e.touches[0].clientY - modalTouchStart;
+    if(dy > 80 && document.getElementById('modal-overlay').classList.contains('open')) closeModal();
+  }, {passive:true});
 });
-
-// Expose for inline onclick
 window.closeModal = closeModal;
 window.saveEdit = saveEdit;
 </script>
