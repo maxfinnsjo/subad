@@ -40,6 +40,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .item-poster{background:linear-gradient(135deg,#fefcf0,#f5f0d0);color:#2a2520;min-width:120px;min-height:80px;padding:14px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.5);border:1px solid #d4ccb0;font-family:'Georgia',serif;line-height:1.5;word-wrap:break-word;white-space:pre-wrap}
 .item-poster:active,.item-poster:hover{box-shadow:0 6px 25px rgba(0,0,0,0.4)}
 
+/* PORTAL */
+.item-portal{background:linear-gradient(135deg,var(--card),#4a3070);border:2px solid var(--accent);min-width:100px;min-height:60px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;box-shadow:0 0 30px rgba(176,136,240,0.15),0 4px 20px var(--shadow)}
+.item-portal:active{box-shadow:0 0 40px rgba(176,136,240,0.3),0 4px 20px var(--shadow)}
+.item-portal .portal-icon{font-size:24px}
+.item-portal .portal-label{font-size:11px;color:var(--accent2);text-align:center;padding:0 8px}
+
 /* IMAGE */
 .item-image{border-radius:8px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);background:var(--card)}
 .item-image img{width:100%;height:100%;object-fit:cover;display:block}
@@ -194,6 +200,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 // ─── STATE ───────────────────────────────────────────────
 const ITEM_TYPES = {
   poster:   { icon:'🖼', label:'Poster',   defaultW:160, defaultH:90 },
+  portal:   { icon:'🌀', label:'Portal',   defaultW:110, defaultH:60 },
   image:    { icon:'📷', label:'Image',    defaultW:140, defaultH:100 },
   gif:      { icon:'✨', label:'GIF',      defaultW:130, defaultH:90 },
   music:    { icon:'🎵', label:'Music',    defaultW:140, defaultH:46 },
@@ -255,6 +262,7 @@ function addItem(type){
 function defaultData(type){
   switch(type){
     case 'poster': return { text: 'write something...' };
+    case 'portal': return { userId: '', label: 'portal' };
     case 'image': return { url: '' };
     case 'gif': return { url: '' };
     case 'music': return { url: '', name: 'song' };
@@ -361,6 +369,8 @@ function renderItemContent(item){
   switch(item.type){
 case 'poster':
       el.textContent = d.text || '...'; break;
+    case 'portal':
+      el.innerHTML = `<div class="portal-icon">🌀</div><div class="portal-label">${escHtml(d.label||'portal')}</div>`; break;
     case 'image':
       if(d.url) el.innerHTML = `<img src="${escHtml(d.url)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.innerText='bad url'">`;
       else el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px">📷 tap to set</div>`;
@@ -503,6 +513,9 @@ function endTouchDrag(){
 // ─── ITEM INTERACTIONS ───────────────────────────────────
 function selectItem(id){ selectedId = id; renderCanvas() }
 function onItemClick(item){
+  if(item.type==='portal'){
+    toast('🌀 portal to other rooms coming soon');
+  }
   if(item.type==='link' && item.data.url){
     window.open(item.data.url, '_blank');
     xp(XP_PER_ACTION);
@@ -534,6 +547,9 @@ function openEdit(id){
   switch(item.type){
     case 'poster':
       html += `<label>Text</label><textarea id="edit-textarea" rows="4">${escHtml(d.text||'')}</textarea>`; break;
+    case 'portal':
+      html += `<label>Label</label><input id="edit-portal-label" value="${escHtml(d.label||'portal')}" placeholder="portal name">`;
+      html += `<p style="color:var(--text2);font-size:12px;margin-top:8px">Portals lead to other users' rooms — available when P2P is live.</p>`; break;
     case 'image': case 'gif':
       html += `<label>URL</label><input id="edit-url" value="${escHtml(d.url||'')}" placeholder="https://...">`; break;
     case 'music':
@@ -558,6 +574,8 @@ function saveEdit(id){
   const data = {};
   switch(item.type){
     case 'poster': data.text = document.getElementById('edit-textarea')?.value || ''; break;
+    case 'portal':
+      data.label = document.getElementById('edit-portal-label')?.value || 'portal'; break;
     case 'image': case 'gif': case 'video': data.url = document.getElementById('edit-url')?.value || ''; break;
     case 'music': data.url = document.getElementById('edit-url')?.value || ''; data.name = document.getElementById('edit-music-name')?.value || 'song'; break;
     case 'link': data.url = document.getElementById('edit-url')?.value || ''; data.label = document.getElementById('edit-link-label')?.value || 'link'; break;
